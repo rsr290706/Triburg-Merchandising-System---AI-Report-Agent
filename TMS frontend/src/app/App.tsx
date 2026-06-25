@@ -228,7 +228,7 @@ export default function App() {
                   onKeyDown={handleKeyDown}
                   placeholder="Example: Show me the total rejected inspection quantity for Vendor A in March 2025."
                   rows={1}
-                  className="w-full resize-none overflow-hidden bg-transparent text-foreground placeholder:text-muted-foreground outline-none leading-snug px-3 py-1.5"
+                  className="w-full resize-none overflow-hidden bg-transparent text-foreground placeholder:text-gray-300 outline-none leading-snug px-3 py-1.5"
                   style={{
                     fontSize: 13.5,
                     minHeight: 28,
