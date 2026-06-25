@@ -1,0 +1,22 @@
+# Backend environment variables
+TMS backend/.env
+
+# Ignore all .env files
+.env
+*.env
+
+# Node
+node_modules/
+dist/
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
