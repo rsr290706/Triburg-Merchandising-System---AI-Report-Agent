@@ -218,7 +218,7 @@ export default function App() {
             {/* Prompt input row — textarea + send button to the right */}
             <div className="flex items-center gap-2 mb-4">
               <div
-                className="flex-1 rounded-xl border border-border overflow-hidden"
+                className="flex-1 rounded-xl border border-border overflow-hidden flex items-center"
                 style={{ background: dark ? "#1e2230" : "#f9fafb" }}
               >
                 <textarea
@@ -228,10 +228,10 @@ export default function App() {
                   onKeyDown={handleKeyDown}
                   placeholder="Example: Show me the total rejected inspection quantity for Vendor A in March 2025."
                   rows={1}
-                  className="w-full resize-none overflow-hidden bg-transparent text-foreground placeholder:text-muted-foreground outline-none leading-snug px-3 py-2"
+                  className="w-full resize-none overflow-hidden bg-transparent text-foreground placeholder:text-muted-foreground outline-none leading-snug px-3 py-1.5"
                   style={{
                     fontSize: 13.5,
-                    minHeight: 30,
+                    minHeight: 28,
                     maxHeight: 160,
                     scrollbarWidth: "none",
                   }}
