@@ -1,36 +1,47 @@
 import chromadb
-from openai import OpenAI
-import os
+import requests
+
+from app.config import CHROMA_DB_PATH
+
+OLLAMA_URL = "http://localhost:11434/api/embed"
+EMBEDDING_MODEL = "nomic-embed-text"
 
 
 class ChromaService:
 
     def __init__(self):
 
-        self.client = chromadb.PersistentClient(path="./chroma_db")
+        self.client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 
         self.collection = self.client.get_or_create_collection(
             name="tms_schema"
         )
 
-        self.openai = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY")
-        )
+        print("=" * 60)
+        print("Collection:", self.collection.name)
+        print("Document Count:", self.collection.count())
+        print("=" * 60)
 
     def get_embedding(self, text: str):
 
-        response = self.openai.embeddings.create(
-            model="text-embedding-3-small",
-            input=text
+        response = requests.post(
+            OLLAMA_URL,
+            json={
+                "model": EMBEDDING_MODEL,
+                "input": text
+            },
+            timeout=60
         )
 
-        return response.data[0].embedding
+        response.raise_for_status()
+
+        return response.json()["embeddings"][0]
 
     def add_document(self, id: str, text: str):
 
         embedding = self.get_embedding(text)
 
-        self.collection.add(
+        self.collection.upsert(
             ids=[id],
             documents=[text],
             embeddings=[embedding]
@@ -45,4 +56,9 @@ class ChromaService:
             n_results=top_k
         )
 
-        return results["documents"][0]
+        documents = results.get("documents", [[]])
+
+        if not documents or not documents[0]:
+            return []
+
+        return documents[0]

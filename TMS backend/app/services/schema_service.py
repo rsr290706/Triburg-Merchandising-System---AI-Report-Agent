@@ -51,39 +51,39 @@ class SchemaService:
         return tables
 
 
-def build_schema_documents(self):
+    def build_schema_documents(self):
 
-    schema = self.extract_schema()
+        schema = self.extract_schema()
 
-    documents = []
+        documents = []
 
-    for table, columns in schema.items():
+        for table, columns in schema.items():
 
-        text_document = f"Table: {table}\n"
+            text_document = f"Table: {table}\n"
 
-        text_document += "Columns:\n"
+            text_document += "Columns:\n"
 
-        for column in columns:
+            for column in columns:
 
-            text_document += (
-                f"- {column['column']} "
-                f"({column['datatype']})"
-            )
+                text_document += (
+                    f"- {column['column']} "
+                    f"({column['datatype']})"
+                )
 
-            if column["key"] == "PRI":
-                text_document += " PRIMARY KEY"
+                if column["key"] == "PRI":
+                    text_document += " PRIMARY KEY"
 
-            text_document += "\n"
+                text_document += "\n"
 
-        documents.append({
+            documents.append({
 
-            "table": table,
+                "table": table,
 
-            "text": text_document
+                "text": text_document
 
-        })
+            })
 
-    return documents
+        return documents
 
 
 
