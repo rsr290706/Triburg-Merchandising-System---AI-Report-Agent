@@ -1,3 +1,4 @@
+import { queryTMS } from "./services/tmsApi";
 import { useState, useRef, useEffect } from "react";
 import {
   MessageSquare,
@@ -49,6 +50,10 @@ export default function App() {
   const [input, setInput] = useState("");
   const [dark, setDark] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [result, setResult] = useState<Record<string, unknown>[] | null>(null);
+  const [queryError, setQueryError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [generatedSQL, setGeneratedSQL] = useState<string | null>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -60,10 +65,24 @@ export default function App() {
     el.style.height = el.scrollHeight + "px";
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
+    const question = input.trim();
     setInput("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
+    setLoading(true);
+    setQueryError(null);
+    setResult(null);
+    setGeneratedSQL(null);
+    try {
+      const data = await queryTMS(question);
+      setGeneratedSQL(data.generated_sql);
+      setResult(data.result);
+    } catch (err: unknown) {
+      setQueryError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -185,6 +204,8 @@ export default function App() {
           </div>
         </aside>
 
+
+
         {/* ── Main ── */}
         <main
           className="flex-1 flex items-center justify-center p-8 overflow-y-auto"
@@ -240,7 +261,7 @@ export default function App() {
               {/* Send button — right of textarea */}
               <button
                 onClick={handleSend}
-                disabled={!input.trim()}
+                disabled={!input.trim() || loading}
                 className="flex items-center justify-center rounded-xl transition-all shrink-0"
                 style={{
                   width: 34,
@@ -305,6 +326,63 @@ export default function App() {
                 ))}
               </div>
             </div>
+            {/* Results */}
+            {loading && (
+              <p className="text-muted-foreground mt-5 text-sm">Thinking...</p>
+            )}
+
+            {queryError && (
+              <div className="mt-5 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 px-4 py-3">
+                <p className="text-red-600 dark:text-red-400 text-sm font-medium">Error</p>
+                <p className="text-red-500 text-xs mt-1">{queryError}</p>
+              </div>
+            )}
+
+            {generatedSQL && (
+              <div className="mt-5">
+                <p className="text-muted-foreground mb-1.5" style={{ fontSize: 12.5 }}>Generated SQL</p>
+                <pre
+                  className="rounded-xl border border-border px-4 py-3 text-xs overflow-x-auto"
+                  style={{ background: dark ? "#1e2230" : "#f9fafb" }}
+                >
+                  {generatedSQL}
+                </pre>
+              </div>
+            )}
+
+            {result && (
+              <div className="mt-5 overflow-x-auto">
+                <p className="text-muted-foreground mb-1.5" style={{ fontSize: 12.5 }}>
+                  Results — {result.length} row{result.length !== 1 ? "s" : ""}
+                </p>
+                {result.length > 0 ? (
+                  <table className="w-full text-left border-collapse" style={{ fontSize: 12.5 }}>
+                    <thead>
+                      <tr className="border-b border-border">
+                        {Object.keys(result[0]).map((col) => (
+                          <th key={col} className="py-2 pr-4 font-semibold text-foreground whitespace-nowrap">
+                            {col}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {result.map((row, i) => (
+                        <tr key={i} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
+                          {Object.values(row).map((val, j) => (
+                            <td key={j} className="py-2 pr-4 text-foreground/80 whitespace-nowrap">
+                              {String(val ?? "—")}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className="text-muted-foreground text-sm">No results found.</p>
+                )}
+              </div>
+            )}
           </div>
         </main>
       </div>
