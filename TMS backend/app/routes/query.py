@@ -5,6 +5,9 @@ from app.services.sql_service import SQLService
 from app.services.ai_service import AIService
 from app.services.rag_service import RAGService
 from app.utils.sql_validator import validate_sql
+from functools import lru_cache
+import hashlib
+import time
 
 router = APIRouter()
 
@@ -12,18 +15,26 @@ ai_service = AIService()
 sql_service = SQLService()
 rag_service = RAGService()
 
+query_cache = {}
 
 @router.post("/query")
-def query(request: QueryRequest):
+async def query(request: QueryRequest):
+
+    sql = None
+    schema = None
+    start = time.time()
+    cache_key = hashlib.md5(request.question.strip().lower().encode()).hexdigest()
+    if cache_key in query_cache:
+        print(f"[cache hit] {request.question[:60]}")
+        return query_cache[cache_key]
 
     sql = None
     schema = None
 
     try:
-
         schema = rag_service.retrieve_schema(request.question)
 
-        sql = ai_service.generate_sql(
+        sql = await ai_service.generate_sql(
             schema=schema,
             user_query=request.question
         )
@@ -32,13 +43,19 @@ def query(request: QueryRequest):
 
         rows = sql_service.execute_query(sql)
 
-        return {
+        duration = round(time.time() - start, 2)
+        print(f"[{duration}s] {request.question[:60]}")
+
+        result = {
             "generated_sql": sql,
-            "result": rows
+            "result": rows,
+            "duration_ms": int(duration * 1000)
         }
 
-    except Exception as e:
+        query_cache[cache_key] = result
+        return result
 
+    except Exception as e:
         raise HTTPException(
             status_code=500,
             detail={

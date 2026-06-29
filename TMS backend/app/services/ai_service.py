@@ -1,10 +1,9 @@
-import requests
+import httpx
 from app.config import OLLAMA_URL, MODEL_NAME
-
 
 class AIService:
 
-    def generate_sql(self, schema: str, user_query: str):
+    async def generate_sql(self, schema: str, user_query: str):
 
         system_prompt = """
                         You are an expert MySQL SQL generator.
@@ -23,14 +22,16 @@ class AIService:
 
                         6. Never explain.
 
-                        7. If the schema is insufficient,
+                        7. Always wrap column and table names in backticks (`) to avoid reserved word conflicts.
+
+                        8. If the schema is insufficient,
                         return exactly:
 
                         INSUFFICIENT_SCHEMA
 
                         followed by a brief explanation.
 
-                        8. Never guess.
+                        9. Never guess.
                         """
 
         prompt = f"""
@@ -64,17 +65,12 @@ class AIService:
         }
 
         try:
-            response = requests.post(
-                OLLAMA_URL,
-                json=payload,
-                timeout=120
-            )
+             async with httpx.AsyncClient(timeout=120) as client:
+                response = await client.post(OLLAMA_URL, json=payload)
+                response.raise_for_status()
+                return response.json()["message"]["content"].strip()
 
-            response.raise_for_status()
-
-            return response.json()["message"]["content"].strip()
-
-        except requests.exceptions.ConnectionError:
+        except httpx.HTTPError:
             raise RuntimeError(
                 "Cannot connect to Ollama. Make sure 'ollama serve' is running."
             )
