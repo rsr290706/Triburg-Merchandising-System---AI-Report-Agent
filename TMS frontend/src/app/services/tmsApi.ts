@@ -1,7 +1,7 @@
-const BASE_URL = "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export async function queryTMS(question: string) {
-  const response = await fetch(`${BASE_URL}/query`, {
+  const response = await fetch(`${API_URL}/query`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

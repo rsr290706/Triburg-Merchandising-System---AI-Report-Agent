@@ -1,5 +1,6 @@
 # Backend environment variables
 TMS backend/.env
+TMS frontend/.env
 
 # Ignore all .env files
 .env
@@ -19,4 +20,4 @@ __pycache__/
 .vscode/
 
 # Windows
-Thumbs.db
+Thumbs.d

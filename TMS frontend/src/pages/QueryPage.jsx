@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { queryTMS } from "../services/tmsApi";
+import { queryTMS } from "../app/services/tmsApi";
 
 export default function QueryPage() {
   const [question, setQuestion] = useState("");
