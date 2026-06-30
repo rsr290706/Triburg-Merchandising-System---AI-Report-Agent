@@ -41,7 +41,7 @@ async def query(request: QueryRequest):
 
         validate_sql(sql)
 
-        rows = sql_service.execute_query(sql)
+        rows = await sql_service.execute_query(sql)
 
         duration = round(time.time() - start, 2)
         print(f"[{duration}s] {request.question[:60]}")
