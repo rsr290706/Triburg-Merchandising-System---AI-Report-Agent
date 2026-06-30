@@ -11,7 +11,7 @@ class SchemaService:
     It should NOT be called every time the user asks a question.
     """
 
-    def extract_schema(self):
+    async def extract_schema(self):
 
         query = """
         SELECT
@@ -25,9 +25,9 @@ class SchemaService:
         ORDER BY TABLE_NAME, ORDINAL_POSITION;
         """
 
-        with engine.connect() as connection:
+        async with engine.connect() as connection:
 
-            result = connection.execute(text(query))
+            result = await connection.execute(text(query))
 
             rows = result.mappings().all()
 
@@ -51,9 +51,9 @@ class SchemaService:
         return tables
 
 
-    def build_schema_documents(self):
+    async def build_schema_documents(self):
 
-        schema = self.extract_schema()
+        schema = await self.extract_schema()
 
         documents = []
 

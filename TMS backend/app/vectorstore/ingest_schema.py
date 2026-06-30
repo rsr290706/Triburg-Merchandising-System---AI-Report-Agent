@@ -1,10 +1,9 @@
+import asyncio
 from app.services.schema_service import SchemaService
 from app.vectorstore.chroma_client import ChromaService
 
 
-def ingest():
-
-
+async def ingest():
 
     print("Step 1: Creating services")
 
@@ -13,7 +12,7 @@ def ingest():
 
     print("Step 2: Building schema documents")
 
-    documents = schema_service.build_schema_documents()
+    documents = await schema_service.build_schema_documents()
 
     print(f"Found {len(documents)} documents")
 
@@ -31,4 +30,4 @@ def ingest():
 
 
 if __name__ == "__main__":
-    ingest()
+    asyncio.run(ingest())

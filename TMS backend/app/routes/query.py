@@ -8,6 +8,10 @@ from app.utils.sql_validator import validate_sql
 from functools import lru_cache
 import hashlib
 import time
+from fastapi.responses import StreamingResponse
+import pandas as pd
+import io
+
 
 router = APIRouter()
 
@@ -54,6 +58,67 @@ async def query(request: QueryRequest):
 
         query_cache[cache_key] = result
         return result
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "schema": schema,
+                "sql": sql,
+                "error": str(e)
+            }
+        )
+    
+@router.post("/export")
+async def export_excel(request: QueryRequest):
+
+    sql = None
+    schema = None
+
+    try:
+        # Reuse the result from /query if this exact question was already run,
+        # so we don't pay for a second LLM call and risk slightly different SQL
+        # producing a different export than what the user saw in the table.
+        cache_key = hashlib.md5(request.question.strip().lower().encode()).hexdigest()
+        cached = query_cache.get(cache_key)
+
+        if cached:
+            print(f"[export cache hit] {request.question[:60]}")
+            sql = cached["generated_sql"]
+            rows = cached["result"]
+        else:
+            schema = rag_service.retrieve_schema(request.question)
+
+            sql = await ai_service.generate_sql(
+                schema=schema,
+                user_query=request.question
+            )
+
+            validate_sql(sql)
+
+            rows = await sql_service.execute_query(sql)
+
+            query_cache[cache_key] = {
+                "generated_sql": sql,
+                "result": rows,
+                "duration_ms": 0
+            }
+
+        df = pd.DataFrame(rows)
+
+        # Write to an in-memory buffer instead of a temp file on disk, so
+        # there's nothing left over to clean up after the response is sent.
+        buffer = io.BytesIO()
+        df.to_excel(buffer, index=False)
+        buffer.seek(0)
+
+        return StreamingResponse(
+            buffer,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": "attachment; filename=TMS_Report.xlsx"
+            }
+        )
 
     except Exception as e:
         raise HTTPException(

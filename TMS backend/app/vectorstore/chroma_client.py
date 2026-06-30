@@ -1,5 +1,6 @@
 import chromadb
 import requests
+import chromadb
 
 from app.config import CHROMA_DB_PATH
 
@@ -14,7 +15,7 @@ class ChromaService:
         self.client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 
         self.collection = self.client.get_or_create_collection(
-            name="tms_schema"
+            name="TMS_schema"
         )
 
         print("=" * 60)
