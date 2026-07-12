@@ -98,7 +98,7 @@ class AIService:
         except Exception as e:
             raise RuntimeError(f"AI generation failed: {e}")
     async def generate_file_sql(self, schema: str, user_query: str):
-
+        
         system_prompt = textwrap.dedent("""
             You are a SQLite SELECT-query generator for uploaded spreadsheet data.
             Output ONLY one executable SQLite SELECT statement against the single

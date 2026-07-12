@@ -26,7 +26,14 @@ semantic_cache = SemanticCacheService()
 imported_files = ImportedFileService()
 
 
-@router.post("/upload-file")
+@router.post(
+    "/upload-file",
+    responses={
+        400: {
+            "description": "Invalid uploaded file"
+        }
+    }
+)
 async def upload_file(request: FileImportRequest):
     try:
         content = base64.b64decode(request.content_base64)
@@ -40,7 +47,14 @@ async def upload_file(request: FileImportRequest):
         )
 
 
-@router.post("/query")
+@router.post(
+    "/query",
+    responses={
+        500: {
+            "description": "Query execution failed"
+        }
+    }
+)
 async def query(request: QueryRequest):
 
     start = time.time()
@@ -112,8 +126,7 @@ async def query(request: QueryRequest):
 
         semantic_cache.store(
             request.question,
-            sql,
-            rows
+            sql
         )
 
         return response
@@ -128,7 +141,14 @@ async def query(request: QueryRequest):
             }
         )
 
-@router.post("/clear-cache")
+@router.post(
+    "/clear-cache",
+    responses={
+        500: {
+            "description": "Clear cache failed"
+        }
+    }
+)
 async def clear_cache():
 
     semantic_cache.clear()
@@ -139,7 +159,14 @@ async def clear_cache():
 
     }
 
-@router.post("/export")
+@router.post(
+    "/export",
+    responses={
+        500: {
+            "description": "Export failed"
+        }
+    }
+)
 async def export_excel(request: QueryRequest):
 
     sql = None
@@ -182,7 +209,6 @@ async def export_excel(request: QueryRequest):
                 semantic_cache.store(
                     question=request.question,
                     sql=sql,
-                    result=rows
                 )
 
         df = pd.DataFrame(rows)
