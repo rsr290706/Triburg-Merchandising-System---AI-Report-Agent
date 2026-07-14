@@ -1,6 +1,5 @@
 from app.vectorstore.chroma_client import ChromaService
 
-
 class FileRAGService:
 
     def __init__(self):
@@ -27,3 +26,4 @@ class FileRAGService:
         print("=" * 60)
 
         return schema
+    

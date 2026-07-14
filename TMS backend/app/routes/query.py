@@ -37,7 +37,7 @@ imported_files = ImportedFileService()
 async def upload_file(request: FileImportRequest):
     try:
         content = base64.b64decode(request.content_base64)
-        return await imported_files.store_upload(request.filename or "uploaded_file", content)
+        return imported_files.store_upload(request.filename or "uploaded_file", content)
     except Exception as e:
         raise HTTPException(
             status_code=400,
@@ -55,6 +55,7 @@ async def upload_file(request: FileImportRequest):
         }
     }
 )
+
 async def query(request: QueryRequest):
 
     start = time.time()
@@ -128,6 +129,10 @@ async def query(request: QueryRequest):
             request.question,
             sql
         )
+        
+        print("=" * 80)
+        print(sql)
+        print("=" * 80)
 
         return response
 
@@ -149,7 +154,7 @@ async def query(request: QueryRequest):
         }
     }
 )
-async def clear_cache():
+def clear_cache():
 
     semantic_cache.clear()
 

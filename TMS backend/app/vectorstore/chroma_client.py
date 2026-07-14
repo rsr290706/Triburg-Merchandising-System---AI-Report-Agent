@@ -29,20 +29,97 @@ class ChromaService:
             name="file_schema"
         )
 
-    def get_embedding(self, text: str):
+    def get_embedding(self, text):
 
         response = requests.post(
+
             OLLAMA_URL,
+
             json={
+
                 "model": EMBEDDING_MODEL,
+
                 "input": text
+
             },
+
             timeout=60
+
         )
 
         response.raise_for_status()
 
-        return response.json()["embeddings"][0]
+        embeddings = response.json()["embeddings"]
+
+        if isinstance(text, str):
+
+            return embeddings[0]
+
+        return embeddings
+    
+    def add_file_documents(
+        self,
+        documents,
+        dataset_id,
+        metadatas=None
+    ):
+
+        texts = [
+            doc["text"]
+            for doc in documents
+        ]
+
+        embeddings = self.get_embedding(texts)
+
+        ids = [
+            f"{dataset_id}-{doc['id']}"
+            for doc in documents
+        ]
+
+        #
+        # If caller didn't provide metadata,
+        # fall back to the old behaviour.
+        #
+        if metadatas is None:
+
+            metadatas = [
+
+                {
+                    "dataset_id": dataset_id
+                }
+
+                for _ in documents
+
+            ]
+
+        #
+        # Otherwise merge dataset_id with
+        # each document's metadata.
+        #
+        else:
+
+            metadatas = [
+
+                {
+                    "dataset_id": dataset_id,
+                    **metadata
+                }
+
+                for metadata in metadatas
+
+            ]
+
+        self.file_schema_collection.upsert(
+
+            ids=ids,
+
+            documents=texts,
+
+            embeddings=embeddings,
+
+            metadatas=metadatas
+
+        )
 
     def add_document(self, id: str, text: str):
 

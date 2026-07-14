@@ -1,4 +1,9 @@
-import { queryTMS, downloadExcel, uploadDataFile, clearSemanticCache } from "./services/tmsApi";
+import {
+    queryTMS,
+    downloadExcel,
+    uploadDataFile,
+    clearSemanticCache,
+} from "./services/tmsApi";
 import { useState, useRef, useEffect } from "react";
 import {
   MessageSquare,
@@ -68,16 +73,6 @@ type ImportedDataset = {
   row_count: number;
   columns: string[];
 };
-
-const quickPrompts = [
-  "Vendor Performance",
-  "Monthly Inspection Report",
-  "Rejection Analysis",
-  "Quality Trends",
-  "Shipment Summary",
-  "Top Performing Vendors",
-  "Delay Analysis",
-];
 
 const tabs = [
   { icon: MessageSquare, label: "conversations" },
@@ -495,7 +490,7 @@ if (!input.trim())
       };
       setGeneratedSQL(data.generated_sql);
       setResult(data.result);
-      setLastQuestion(question);
+      setLastQuestion(question);;
       setLastDatasetId(importedDataset?.dataset_id ?? null);
       setWasCached(Boolean(data.cached));
       setQueryDurationMs(typeof data.duration_ms === "number" ? data.duration_ms : null);
@@ -613,7 +608,17 @@ if (!input.trim())
                     onClick={() =>
                         setShowSettingsMenu(!showSettingsMenu)
                     }
-                    className="p-1 rounded-lg hover:bg-accent transition -translate-x-1 translate-y-px"
+                    className="
+                        p-1
+                        rounded-lg
+                        text-muted-foreground
+                        hover:text-foreground
+                        hover:bg-accent
+                        transition-all
+                        duration-200
+                        -translate-x-1
+                        translate-y-px
+                    "
                 >
                     <Settings size={15} />
                 </button>
@@ -811,7 +816,15 @@ if (!input.trim())
                 <textarea
                   ref={textareaRef}
                   value={input}
-                  onChange={(e) => { setInput(e.target.value); autoResize(e.target); }}
+                  onChange={(e) => {
+
+                      const value = e.target.value;
+
+                      setInput(value);
+
+                      autoResize(e.target);
+
+                  }}
                   onKeyDown={handleKeyDown}
                   disabled={uploadingFile}
                   placeholder={
@@ -949,31 +962,6 @@ if (!input.trim())
                     </div>
                 </div>
             )}
-            {/* Quick prompts */}
-            <div className="pb-6">
-              <p className="text-muted-foreground mb-2.5" style={{ fontSize: 12.5 }}>
-                Quick prompts
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {quickPrompts.map((prompt) => (
-                  <button
-                    key={prompt}
-                    onClick={() => setInput(prompt)}
-                    className="rounded-full border border-border text-foreground hover:border-primary hover:text-primary transition-colors"
-                    style={{
-                      fontSize: 12.5,
-                      paddingLeft: 14,
-                      paddingRight: 14,
-                      paddingTop: 6,
-                      paddingBottom: 6,
-                      background: "transparent",
-                    }}
-                  >
-                    {prompt}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Loading / error states — inside padding */}
