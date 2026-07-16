@@ -1,4 +1,4 @@
-const API_URL = "/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const networkErrorMessage =
   "Could not reach the local backend. Make sure start.bat is running, then refresh the page.";
@@ -87,17 +87,9 @@ export async function downloadExcel(question: string, datasetId?: string | null)
 
 export async function clearSemanticCache() {
 
-    const response = await fetch(
-
-        "http://localhost:8080/clear-cache",
-
-        {
-
-            method: "POST"
-
-        }
-
-    );
+    const response = await fetch(`${API_URL}/clear-cache`, {
+      method: "POST",
+    });
 
     if(!response.ok){
 
