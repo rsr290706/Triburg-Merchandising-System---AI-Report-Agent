@@ -8,8 +8,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:8080",
+        "https://triburg-merchandising-system-ai-report-agent-mn6lx16se.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
