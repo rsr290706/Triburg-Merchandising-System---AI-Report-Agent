@@ -7,10 +7,8 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://triburg-merchandising-system-ai-report-agent-mn6lx16se.vercel.app",
-    ],
-    allow_credentials=True,
+    allow_origins=["https://triburg-merchandising-system-ai-rep.vercel.app",],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
