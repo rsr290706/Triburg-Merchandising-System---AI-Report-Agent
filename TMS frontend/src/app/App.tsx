@@ -140,7 +140,6 @@ export default function App() {
   const [dark, setDark] = useState(() => {
     return localStorage.getItem("theme") === "dark";
   });
-  const [dragging, setDragging] = useState(false);
   const [result, setResult] = useState<Record<string, unknown>[] | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -465,7 +464,6 @@ export default function App() {
       setUploadError(err instanceof Error ? err.message : "File upload failed");
     } finally {
       setUploadingFile(false);
-      setDragging(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
