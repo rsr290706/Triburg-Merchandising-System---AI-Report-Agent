@@ -158,6 +158,10 @@ export default function App() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [lastDatasetId, setLastDatasetId] = useState<string | null>(null);
   const [showSettingsMenu,setShowSettingsMenu]=useState(false);
+  const [databaseInfo, setDatabaseInfo] = useState({
+  database: "",
+  tables: 0,
+  });
 
   useEffect(() => {
       document.documentElement.classList.toggle("dark", dark);
@@ -275,6 +279,36 @@ export default function App() {
 
     return () => window.clearTimeout(timeout);
   }, [queryComplete]);
+
+  useEffect(() => {
+
+      async function loadDatabaseInfo() {
+
+          try {
+
+              const response = await fetch(
+                  `${import.meta.env.VITE_API_URL}/database-info`
+              );
+
+              if (!response.ok)
+                  throw new Error("Failed to fetch database info");
+
+              const data = await response.json();
+
+              setDatabaseInfo(data);
+
+          }
+          catch (err) {
+
+              console.error(err);
+
+          }
+
+      }
+
+      loadDatabaseInfo();
+
+  }, []);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -767,8 +801,13 @@ if (!input.trim())
                 Database Connected
               </span>
             </div>
-            <p className="text-muted-foreground pl-4" style={{ fontSize: 11 }}>
-              TMS_PROD · 14 tables
+            <p
+                className="text-muted-foreground pl-4"
+                style={{ fontSize: 11 }}
+            >
+                {databaseInfo.database
+                    ? `${databaseInfo.database} · ${databaseInfo.tables} tables`
+                    : "Loading..."}
             </p>
           </div>
         </div>
