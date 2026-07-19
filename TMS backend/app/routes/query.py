@@ -1,7 +1,7 @@
 import base64
 import io
 import time
-
+import traceback
 import pandas as pd
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
@@ -14,7 +14,8 @@ from app.services.semantic_cache_service import SemanticCacheService
 from app.services.file_rag_service import FileRAGService
 from app.services.sql_service import SQLService
 from app.utils.sql_validator import validate_sql
-
+from sqlalchemy import text
+from app.database import engine
 
 router = APIRouter()
 
@@ -69,13 +70,28 @@ async def query(request: QueryRequest):
                 request.question
             )
 
+            print("=" * 80)
+            print("FILE RAG OUTPUT")
+            for item in schema:
+                print(item["text"])
+            print("=" * 80)
+
+            schema_text = ai_service.build_schema_context(schema)
+
             sql = await ai_service.generate_file_sql(
-                schema=schema,
-                user_query=request.question
+                schema=schema_text,
+                user_query=request.question,
             )
 
-            sql = validate_sql(sql)
-            rows = imported_files.execute_query(request.dataset_id, sql)
+            print("=" * 80)
+            print("GENERATED SQL")
+            print(sql)
+            print("=" * 80)
+
+            rows = imported_files.execute_query(
+                request.dataset_id,
+                sql
+            )
 
             duration = round(time.time() - start, 2)
 
@@ -86,7 +102,11 @@ async def query(request: QueryRequest):
                 "source": "file"
             }
 
+        print("STEP 1 - Semantic cache")
+
         cached = semantic_cache.search(request.question)
+        
+        print("STEP 2 - Cache finished")
 
         if cached:
             print("[Semantic Cache Hit]")
@@ -105,14 +125,28 @@ async def query(request: QueryRequest):
                 "source": "database"
             }
 
+        print("STEP 3 - Retrieving schema")
+
         schema = rag_service.retrieve_schema(request.question)
+        
+        print(schema)
+
+        print("STEP 4 - Generating SQL")
+
 
         sql = await ai_service.generate_sql(
-            schema=schema,
+            retrieved_schema=schema["results"],
             user_query=request.question
         )
+                
+        print(sql)
+
+        print("STEP 5 - Validating SQL")
 
         sql = validate_sql(sql)
+        
+        print(sql)
+      
         rows = await sql_service.execute_query(sql)
 
         duration = round(time.time() - start, 2)
@@ -137,14 +171,19 @@ async def query(request: QueryRequest):
         return response
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "schema": schema,
-                "sql": sql,
-                "error": str(e)
-            }
-        )
+      print("\n" + "=" * 80)
+      print("QUERY FAILED")
+      traceback.print_exc()
+      print("=" * 80)
+  
+      raise HTTPException(
+          status_code=500,
+          detail={
+              "schema": schema,
+              "sql": sql,
+              "error": str(e)
+          }
+      )
 
 @router.post(
     "/clear-cache",
@@ -184,11 +223,12 @@ async def export_excel(request: QueryRequest):
                 request.question
             )
 
+            schema_text = ai_service.build_schema_context(schema)
+
             sql = await ai_service.generate_file_sql(
-                schema=schema,
+                schema=schema_text,
                 user_query=request.question
             )
-
             sql = validate_sql(sql)
             rows = imported_files.execute_query(request.dataset_id, sql)
         else:
@@ -204,7 +244,7 @@ async def export_excel(request: QueryRequest):
                 schema = rag_service.retrieve_schema(request.question)
 
                 sql = await ai_service.generate_sql(
-                    schema=schema,
+                    retrieved_schema=schema["results"],
                     user_query=request.question
                 )
 
@@ -239,3 +279,25 @@ async def export_excel(request: QueryRequest):
                 "error": str(e)
             }
         )
+      
+@router.get("/database-info")
+async def database_info():
+
+    async with engine.connect() as conn:
+
+        db_result = await conn.execute(
+            text("SELECT DATABASE();")
+        )
+
+        table_result = await conn.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM information_schema.tables
+                WHERE table_schema = DATABASE();
+            """)
+        )
+
+        return {
+            "database": db_result.scalar(),
+            "tables": table_result.scalar()
+        }

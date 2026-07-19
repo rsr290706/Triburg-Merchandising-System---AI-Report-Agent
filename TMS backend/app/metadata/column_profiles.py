@@ -1,15 +1,3 @@
-"""Hand-curated business metadata for known TMS columns.
-
-This is pure data — no logic lives here. `ImportedFileService` looks a
-column up here first; if it isn't found, semantic_detection.py takes
-over and infers a profile automatically (see item #2/#8 in the
-refactor notes).
-
-To teach the system about a new column, add an entry here. Keys must
-be lowercase with underscores (matching `_clean_columns` output),
-e.g. "insp_qty", "oc_value".
-"""
-
 from __future__ import annotations
 
 from typing import Any, TypedDict

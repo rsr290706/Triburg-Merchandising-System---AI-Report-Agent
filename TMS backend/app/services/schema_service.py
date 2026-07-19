@@ -1,82 +1,96 @@
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncConnection
+
+import pandas as pd
+
 from app.database import engine
+
+from app.services.schema_profiler import SchemaProfiler
+from app.services.schema_metadata_service import SchemaMetadataService
+
+from app.metadata.date_detection import detect_date_columns
+from app.metadata.numeric_detection import detect_numeric_columns
 
 
 class SchemaService:
+
+    def __init__(self):
+
+        self.profiler = SchemaProfiler()
+
+        self.metadata_service = SchemaMetadataService()
     
-    async def extract_schema(self):
 
-        query = """
-        SELECT
-            TABLE_NAME,
-            COLUMN_NAME,
-            DATA_TYPE,
-            COLUMN_KEY,
-            IS_NULLABLE
-        FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_SCHEMA = DATABASE()
-        ORDER BY TABLE_NAME, ORDINAL_POSITION;
-        """
-
-        async with engine.connect() as connection:
-
-            result = await connection.execute(text(query))
-
-            rows = result.mappings().all()
-
-        tables = {}
-
-        for row in rows:
-
-            table = row["TABLE_NAME"]
-
-            if table not in tables:
-
-                tables[table] = []
-
-            tables[table].append({
-                "column": row["COLUMN_NAME"],
-                "datatype": row["DATA_TYPE"],
-                "key": row["COLUMN_KEY"],
-                "nullable": row["IS_NULLABLE"]
-            })
-
-        return tables
-
+    async def load_table_dataframe(
+          self,
+          connection: AsyncConnection,
+          table_name: str,
+          limit: int = 1000,
+      ) -> pd.DataFrame:
+      
+          query = text(
+              f"""
+              SELECT *
+              FROM `{table_name}`
+              LIMIT {limit}
+              """
+          )
+      
+          result = await connection.execute(query)
+      
+          rows = result.mappings().all()
+      
+          return pd.DataFrame(rows)
 
     async def build_schema_documents(self):
 
-        schema = await self.extract_schema()
+        table_metadata = await self.metadata_service.get_table_metadata()
 
         documents = []
 
-        for table, columns in schema.items():
+        async with engine.connect() as connection:
 
-            text_document = f"Table: {table}\n"
+            for table_name, metadata in table_metadata.items():
 
-            text_document += "Columns:\n"
+                df = await self.load_table_dataframe(
+                    connection,
+                    table_name,
+                )
+                # Skip empty tables
+                if df.empty:
+                    continue
 
-            for column in columns:
+                df.columns = self.profiler.clean_columns(df.columns)
 
-                text_document += (
-                    f"- {column['column']} "
-                    f"({column['datatype']})"
+                df = detect_date_columns(df)
+                df = detect_numeric_columns(df)
+
+                table_document = self.profiler.profile_table(
+                    table_name=table_name,
+                    table_metadata=metadata,
                 )
 
-                if column["key"] == "PRI":
-                    text_document += " PRIMARY KEY"
+                documents.append(table_document)
 
-                text_document += "\n"
+                for relationship in metadata["foreign_keys"]:
 
-            documents.append({
+                    relationship_document = self.profiler.profile_relationship(
+                        table_name=table_name,
+                        relationship=relationship,
+                    )
 
-                "table": table,
+                    documents.append(
+                        relationship_document
+                    )
 
-                "text": text_document
+                for column in df.columns:
 
-            })
+                    document = self.profiler.profile_column(
+                        table_name=table_name,
+                        series=df[column],
+                        column=column,
+                    )
+
+                    documents.append(document)
 
         return documents
-
-
-

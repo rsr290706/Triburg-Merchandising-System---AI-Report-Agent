@@ -2,9 +2,9 @@ import chromadb
 import requests
 
 
-from app.config import CHROMA_DB_PATH
+from app.config import CHROMA_DB_PATH , OLLAMA_URL
 
-OLLAMA_URL = "http://localhost:11434/api/embed"
+OLLAMA_URL = OLLAMA_URL + "/embed"
 EMBEDDING_MODEL = "nomic-embed-text"
 
 
@@ -121,15 +121,52 @@ class ChromaService:
 
         )
 
-    def add_document(self, id: str, text: str):
+    def add_document(
+        self,
+        id: str,
+        text: str,
+        metadata: dict | None = None,
+    ):
 
         embedding = self.get_embedding(text)
 
         self.collection.upsert(
             ids=[id],
             documents=[text],
-            embeddings=[embedding]
+            embeddings=[embedding],
+            metadatas=[metadata or {}],
         )
+
+    def add_documents(self, documents: list[dict]):
+
+        texts = [doc["text"] for doc in documents]
+
+        ids = [doc["id"] for doc in documents]
+
+        metadatas = [
+            doc.get("metadata", {})
+            for doc in documents
+        ]
+
+        embeddings = self.get_embedding(texts)
+
+        self.collection.upsert(
+            ids=ids,
+            documents=texts,
+            embeddings=embeddings,
+            metadatas=metadatas,
+        )
+
+    def clear_schema(self):
+
+        data = self.collection.get(include=[])
+
+        ids = data.get("ids", [])
+
+        if ids:
+            self.collection.delete(ids=ids)
+
+        print(f"Deleted {len(ids)} schema documents.")
 
     def add_file_document(
         self,
@@ -171,21 +208,136 @@ class ChromaService:
 
         print(f"[File RAG] Deleted {len(ids)} schema documents.")
 
-    def search(self, question: str, top_k: int = 5):
+    def _format_results(self, results):
+
+        documents = results.get("documents", [[]])[0]
+
+        metadatas = results.get("metadatas", [[]])[0]
+
+        distances = results.get("distances", [[]])[0]
+
+        ids = results.get("ids", [[]])[0]
+
+        retrieved = []
+
+        for id_, text, metadata, distance in zip(
+
+            ids,
+
+            documents,
+
+            metadatas,
+
+            distances,
+
+        ):
+
+            retrieved.append(
+
+                {
+
+                    "id": id_,
+
+                    "text": text,
+
+                    "metadata": metadata or {},
+
+                    "distance": distance,
+
+                }
+
+            )
+
+        return retrieved
+
+    def search(
+        self,
+        question: str,
+        top_k: int = 5,
+    ):
 
         embedding = self.get_embedding(question)
 
         results = self.collection.query(
             query_embeddings=[embedding],
-            n_results=top_k
+            n_results=top_k,
+            include=[
+                "documents",
+                "metadatas",
+                "distances",
+            ],
         )
 
-        documents = results.get("documents", [[]])
+        return self._format_results(results)
+    
+    @staticmethod
+    def build_context(results):
 
-        if not documents or not documents[0]:
-            return []
+        table_docs = []
 
-        return documents[0]
+        relationship_docs = []
+
+        column_docs = []
+
+        for result in results:
+
+            document_type = result["metadata"].get(
+
+                "document_type",
+
+                "column",
+
+            )
+
+            if document_type == "table":
+
+                table_docs.append(result["text"])
+
+            elif document_type == "relationship":
+
+                relationship_docs.append(result["text"])
+
+            else:
+
+                column_docs.append(result["text"])
+
+        sections = []
+
+        if table_docs:
+
+            sections.append(
+
+                "DATABASE SUMMARY\n\n"
+
+                + "\n\n".join(table_docs)
+
+            )
+
+        if relationship_docs:
+
+            sections.append(
+
+                "TABLE RELATIONSHIPS\n\n"
+
+                + "\n\n".join(relationship_docs)
+
+            )
+
+        if column_docs:
+
+            sections.append(
+
+                "COLUMN DETAILS\n\n"
+
+                + "\n\n".join(column_docs)
+
+            )
+
+        return "\n\n====================\n\n".join(
+
+            sections
+
+        )
     
     def retrieve_file_schema(
         self,
@@ -208,6 +360,4 @@ class ChromaService:
 
         )
 
-        return "\n\n".join(
-            results["documents"][0]
-        )
+        return self._format_results(results)

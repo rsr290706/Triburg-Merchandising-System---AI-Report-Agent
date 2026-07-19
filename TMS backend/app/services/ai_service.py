@@ -2,9 +2,69 @@ import httpx
 import textwrap
 from app.config import OLLAMA_URL, MODEL_NAME
 
+OLLAMA_URL = OLLAMA_URL + "/chat"
+
 class AIService:
 
-    async def generate_sql(self, schema: str, user_query: str):
+    @staticmethod
+    def build_schema_context(results: list[dict]) -> str:
+
+        table_docs = []
+        relationship_docs = []
+        column_docs = []
+
+        for result in results:
+
+            document_type = result["metadata"].get(
+                "document_type",
+                "column",
+            )
+
+            if document_type == "table":
+
+                table_docs.append(result["text"])
+
+            elif document_type == "relationship":
+
+                relationship_docs.append(result["text"])
+
+            else:
+
+                column_docs.append(result["text"])
+
+        sections = []
+
+        if table_docs:
+
+            sections.append(
+                "DATABASE SUMMARY\n\n" +
+                "\n\n".join(table_docs)
+            )
+
+        if relationship_docs:
+
+            sections.append(
+                "TABLE RELATIONSHIPS\n\n" +
+                "\n\n".join(relationship_docs)
+            )
+
+        if column_docs:
+
+            sections.append(
+                "COLUMN DEFINITIONS\n\n" +
+                "\n\n".join(column_docs)
+            )
+
+        return "\n\n====================\n\n".join(
+            sections
+    )
+
+    async def generate_sql(
+        self,
+        retrieved_schema: list[dict],
+        user_query: str,
+    ):
+        schema = self.build_schema_context(retrieved_schema)
 
         system_prompt = textwrap.dedent("""
             You are a senior MySQL analyst. Convert the user's business question into
@@ -29,6 +89,15 @@ class AIService:
             - Wrap every table/column name in backticks. Never use SELECT *.
             - Include a column only if it is selected, filtered, grouped, or ordered
             by — don't add "context" columns the question didn't ask for.
+                                        
+            SCHEMA UNDERSTANDING
+            - The retrieved schema contains three document types:
+                1. Table summaries describing business entities.
+                2. Relationship documents describing valid joins.
+                3. Column documents describing fields.
+            - Always identify the relevant table summaries first.
+            - Use relationship documents to determine joins.
+            - Use column documents only to identify field names and meanings.
         
             DECIDE THE GRAIN BEFORE WRITING SQL
             Every question needs exactly one of:
@@ -157,10 +226,12 @@ class AIService:
             ],
             "stream": False,
             "think": False,
+            "keep_alive": "10m",
             "options": {
                 "temperature": 0,
-                "num_ctx": 4096,
-                "num_predict": 200
+                "num_ctx": 2048,
+                "num_batch": 512,
+                "num_predict": 64
             }
         }
 
@@ -177,6 +248,7 @@ class AIService:
 
         except Exception as e:
             raise RuntimeError(f"AI generation failed: {e}")
+        
     async def generate_file_sql(self, schema: str, user_query: str):
         
         system_prompt = textwrap.dedent("""
@@ -352,8 +424,9 @@ class AIService:
             "keep_alive": "10m",
             "options": {
                 "temperature": 0,
-                "num_ctx": 4096,
-                "num_batch": 256
+                "num_ctx": 2048,
+                "num_batch": 256,
+                "num_predict": 64
             }
         }
 

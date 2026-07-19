@@ -1,10 +1,3 @@
-"""Per-column statistics used to enrich schema documents (item #9).
-
-Kept separate from ImportedFileService so it can be unit tested and
-reused (e.g. by an export or profiling endpoint) without touching the
-upload/ingestion flow.
-"""
-
 from __future__ import annotations
 
 from typing import Any
@@ -70,7 +63,6 @@ def compute_column_statistics(series: pd.Series, datatype: str) -> dict[str, Any
 
 
 def format_statistics(stats: dict[str, Any]) -> str:
-    """Render a statistics dict as compact, LLM-friendly text lines."""
     if not stats:
         return ""
 

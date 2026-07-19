@@ -69,20 +69,14 @@ class SemanticCacheService:
             "cached": True
         }
     
-    def store( self, question, sql, result ):
-
-        embedding = self.chroma.get_embedding(question)
-        
-        self.chroma.cache_collection.upsert(
-
-            ids=[str(uuid.uuid4())],
-
-            documents=[question],
-
-            embeddings=[embedding],
-
-            metadatas=[{
-
-                "sql": sql,
-            }]
-        )
+    def store(self, question, sql):
+      embedding = self.chroma.get_embedding(question)
+  
+      self.chroma.cache_collection.upsert(
+          ids=[str(uuid.uuid4())],
+          documents=[question],
+          embeddings=[embedding],
+          metadatas=[{
+              "sql": sql,
+          }]
+      )

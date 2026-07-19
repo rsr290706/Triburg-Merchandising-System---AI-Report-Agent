@@ -8,6 +8,7 @@ async def ingest():
     print("Step 1: Creating services")
 
     schema_service = SchemaService()
+
     chroma = ChromaService()
 
     print("Step 2: Building schema documents")
@@ -16,15 +17,15 @@ async def ingest():
 
     print(f"Found {len(documents)} documents")
 
-    for doc in documents:
-        print(f"Inserting: {doc['table']}")
+    print("Clearing existing schema...")
 
-        chroma.add_document(
-            id=doc["table"],
-            text=doc["text"]
-        )
+    chroma.clear_schema()
 
-    print("Step 3: Done")
+    print("Step 3: Uploading documents")
+
+    chroma.add_documents(documents)
+
+    print(f"Inserted {len(documents)} documents")
 
     print("Documents in collection:", chroma.collection.count())
 
