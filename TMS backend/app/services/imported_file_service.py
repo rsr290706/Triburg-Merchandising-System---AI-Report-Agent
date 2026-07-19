@@ -32,7 +32,52 @@ class ImportedFileService:
         if extension == "csv":
             df = pd.read_csv(io.BytesIO(content))
         elif extension in {"xlsx", "xls"}:
-            df = pd.read_excel(io.BytesIO(content))
+          excel_file = io.BytesIO(content)
+      
+          # Read without assuming any header
+          preview = pd.read_excel(excel_file, header=None)
+      
+          EXPECTED_COLUMNS = [
+              "Team",
+              "Merchant",
+              "Vendor",
+              "Buyer",
+              "Style",
+              "PO",
+              "Factory",
+              "Booking Value",
+              "Shipping Value",
+          ]
+      
+          header_row = None
+      
+          for i, row in preview.iterrows():
+              values = (
+                  row.astype(str)
+                     .str.strip()
+                     .str.lower()
+                     .tolist()
+              )
+      
+              matches = sum(
+                  col.lower() in values
+                  for col in EXPECTED_COLUMNS
+              )
+      
+              if matches >= 2:
+                  header_row = i
+                  break
+      
+          if header_row is None:
+              header_row = 0
+      
+          # Reset stream before reading again
+          excel_file.seek(0)
+      
+          df = pd.read_excel(
+              excel_file,
+              skiprows=header_row
+          )
         else:
             raise ValueError("Only CSV, XLS, and XLSX files are supported.")
 

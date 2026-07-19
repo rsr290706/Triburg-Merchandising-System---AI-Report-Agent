@@ -1,5 +1,6 @@
 import httpx
 import textwrap
+import re
 from app.config import OLLAMA_URL, MODEL_NAME
 from app.prompts.sql_prompts import (
     MYSQL_CORE_PROMPT,
@@ -140,7 +141,12 @@ class AIService:
                 response.raise_for_status()
                 return response.json()["message"]["content"].strip()
 
-        except httpx.HTTPError:
+        except httpx.HTTPStatusError as e:
+            raise RuntimeError(
+                f"Ollama returned {e.response.status_code}: {e.response.text}"
+            )
+        
+        except httpx.ConnectError:
             raise RuntimeError(
                 "Cannot connect to Ollama. Make sure 'ollama serve' is running."
             )
@@ -153,18 +159,10 @@ class AIService:
         system_prompt = SQLITE_CORE_PROMPT
 
         if not is_simple_query(user_query):
+            print("Using SQLITE ADVANCED prompt")
             system_prompt += "\n\n" + SQLITE_ADVANCED_PROMPT
-
-        if is_simple_query(user_query):
-            print("Using CORE prompt")
-            system_prompt = MYSQL_CORE_PROMPT
         else:
-            print("Using ADVANCED prompt")
-            system_prompt = (
-                MYSQL_CORE_PROMPT +
-                "\n\n" +
-                MYSQL_ADVANCED_PROMPT
-            )
+            print("Using SQLITE CORE prompt")
 
         prompt = f"""
                 Uploaded File Schema
@@ -205,7 +203,29 @@ class AIService:
                     json=payload,
                 )
                 response.raise_for_status()
-                return response.json()["message"]["content"].strip()
+                response_json = response.json()
+                output = response_json["message"]["content"].strip()
+                
+                print("=" * 80)
+                print("RAW MODEL OUTPUT")
+                print(output)
+                print("=" * 80)
+                
+                # Remove markdown code fences
+                output = re.sub(r"```sql|```", "", output, flags=re.IGNORECASE).strip()
+                
+                # Extract the first SELECT or WITH statement
+                match = re.search(
+                    r"(?is)\b(SELECT|WITH)\b.*?;",
+                    output,
+                )
+                
+                if match:
+                    return match.group(0).strip()
+                
+                raise RuntimeError(
+                    f"Model did not return executable SQL:\n\n{output}"
+                )
 
         except httpx.HTTPError:
             raise RuntimeError(

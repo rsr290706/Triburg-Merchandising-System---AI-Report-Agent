@@ -15,8 +15,6 @@ import {
   Paperclip,
   Send,
   BarChart2,
-  Moon,
-  Sun,
   CheckCircle2,
   Circle,
   Loader2,
@@ -152,9 +150,6 @@ export default function App() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [input, setInput] = useState("");
-  const [dark, setDark] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
   const [result, setResult] = useState<Record<string, unknown>[] | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -177,15 +172,6 @@ export default function App() {
   database: "",
   tables: 0,
   });
-
-  useEffect(() => {
-      document.documentElement.classList.toggle("dark", dark);
-
-      localStorage.setItem(
-          "theme",
-          dark ? "dark" : "light"
-      );
-  }, [dark]);
 
   useEffect(() => {
 
@@ -661,15 +647,6 @@ if (!input.trim())
             >
               Triburg TMS
             </span>
-            <button
-              onClick={() => setDark((d) => !d)}
-              className="p-1 rounded-md transition-colors"
-              style={{ color: palette.textMuted }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = palette.text)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = palette.textMuted)}
-            >
-              {dark ? <Sun style={{ width: 14, height: 14 }} /> : <Moon style={{ width: 14, height: 14 }} />}
-            </button>
             <div className="relative">
               <button
                 onClick={() => setShowSettingsMenu(!showSettingsMenu)}
