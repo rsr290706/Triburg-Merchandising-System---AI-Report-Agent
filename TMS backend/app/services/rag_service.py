@@ -2,6 +2,7 @@ from app.vectorstore.chroma_client import ChromaService
 from app.metadata.semantic_detection import build_query_expansion
 from app.metadata.column_profiles import COLUMN_PROFILES
 from app.services.retrieval_ranker import RetrievalRanker
+from app.prompts.sql_prompts import is_simple_query
 
 class RAGService:
 
@@ -17,9 +18,7 @@ class RAGService:
             COLUMN_PROFILES,
         )
 
-        top_k = self.determine_top_k(
-            expanded_question
-        )
+        top_k = self.determine_top_k(question)
 
         results = self.vector_db.search(
             question=expanded_question,
@@ -42,32 +41,7 @@ class RAGService:
         question: str,
     ) -> int:
 
-        question = question.lower()
+        if is_simple_query(question):
+            return 6
 
-        aggregation = [
-            "total",
-            "sum",
-            "average",
-            "count",
-            "maximum",
-            "minimum",
-        ]
-
-        join_words = [
-            "buyer",
-            "merchant",
-            "factory",
-            "country",
-            "team",
-            "style",
-        ]
-
-        if any(word in question for word in aggregation):
-
-            return 12
-
-        if any(word in question for word in join_words):
-
-            return 10
-
-        return 6
+        return 15
