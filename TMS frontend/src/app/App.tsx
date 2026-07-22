@@ -90,7 +90,6 @@ type ImportedDataset = {
 const tabs = [
   { icon: MessageSquare, label: "conversations" },
   { icon: Star, label: "Starred" },
-  { icon: FileText, label: "Files" },
 ];
 
 const querySteps = [
@@ -439,6 +438,32 @@ export default function App() {
     });
   };
 
+  const toggleStar = (conversationId: string) => {
+
+      setConversations(prev => {
+
+          const updated = prev.map(chat =>
+              chat.id === conversationId
+                  ? {
+                      ...chat,
+                      starred: !chat.starred
+                  }
+                  : chat
+          );
+
+          if (
+              activeTab === 1 &&
+              updated.every(chat => !chat.starred)
+          ) {
+              setActiveTab(0);
+          }
+
+          return updated;
+
+      });
+
+  };
+
   const autoResize = (el: HTMLTextAreaElement) => {
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
@@ -606,6 +631,27 @@ if (!input.trim())
     }
   };
 
+  const starredChats = conversations
+      .filter(chat => chat.starred)
+      .sort(
+          (a, b) =>
+              new Date(b.updatedAt).getTime() -
+              new Date(a.updatedAt).getTime()
+      );
+
+  const historyChats = conversations
+      .filter(chat => !chat.starred)
+      .sort(
+          (a, b) =>
+              new Date(b.updatedAt).getTime() -
+              new Date(a.updatedAt).getTime()
+      );
+
+  const displayedChats =
+      activeTab === 1
+          ? starredChats
+          : historyChats;
+
   return (
     <div
       className="flex h-full"
@@ -723,55 +769,96 @@ if (!input.trim())
             className="px-5 pb-2 font-semibold uppercase tracking-wide"
             style={{ fontSize: 10.5, color: palette.textMuted, letterSpacing: "0.06em" }}
           >
-            History
+            {activeTab === 0 ? "History" : "Starred"}
           </p>
           <div className="flex-1 overflow-y-auto px-2 space-y-0.5 pb-2">
-            {conversations.map((chat) => {
-              const active = currentConversationId === chat.id;
-              return (
-                <button
-                  key={chat.id}
-                  onClick={() => setCurrentConversationId(chat.id)}
-                  className="w-full text-left px-3 py-2.5 rounded-lg transition-colors group"
-                  style={{ background: active ? palette.hover : "transparent" }}
-                  onMouseEnter={(e) => {
-                    if (!active) e.currentTarget.style.background = palette.hover;
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!active) e.currentTarget.style.background = "transparent";
-                  }}
+            {displayedChats.length === 0 ? (
+
+                <div
+                    className="flex flex-col items-center justify-center py-12"
+                    style={{ color: palette.textMuted }}
                 >
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="font-medium leading-snug truncate"
-                        style={{ fontSize: 12.5, color: active ? palette.text : palette.textSecondary }}
+                    <Star size={22} />
+
+                    <p className="mt-2 text-xs">
+                        {activeTab === 1
+                            ? "No starred conversations"
+                            : "No conversations"}
+                    </p>
+
+                </div>
+
+            ) : (
+
+                displayedChats.map((chat) => {
+
+                    const active = currentConversationId === chat.id;
+
+                    return (
+                      <button
+                        key={chat.id}
+                        onClick={() => setCurrentConversationId(chat.id)}
+                        className="w-full text-left px-3 py-2.5 rounded-lg transition-colors group"
+                        style={{ background: active ? palette.hover : "transparent" }}
+                        onMouseEnter={(e) => {
+                          if (!active) e.currentTarget.style.background = palette.hover;
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!active) e.currentTarget.style.background = "transparent";
+                        }}
                       >
-                        {chat.title}
-                      </p>
-                      <p
-                        className="flex items-center gap-1 mt-1"
-                        style={{ fontSize: 11, color: palette.textMuted }}
-                      >
-                        <Clock style={{ width: 10, height: 10 }} />
-                        {formatRelativeTime(chat.updatedAt)}
-                      </p>
-                    </div>
-                    <span
-                      role="button"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded"
-                      style={{ color: palette.textMuted }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteConversation(chat.id);
-                      }}
-                    >
-                      <Trash2 style={{ width: 12, height: 12 }} />
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className="font-medium leading-snug truncate"
+                              style={{ fontSize: 12.5, color: active ? palette.text : palette.textSecondary }}
+                            >
+                              {chat.title}
+                            </p>
+                            <p
+                              className="flex items-center gap-1 mt-1"
+                              style={{ fontSize: 11, color: palette.textMuted }}
+                            >
+                              <Clock style={{ width: 10, height: 10 }} />
+                              {formatRelativeTime(chat.updatedAt)}
+                            </p>
+                          </div>
+                          <div
+                              className="flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                              <button
+                                  onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteConversation(chat.id);
+                                  }}
+                                  className="p-1 rounded hover:bg-neutral-700"
+                              >
+                                  <Trash2
+                                      size={12}
+                                      color={palette.textMuted}
+                                  />
+                              </button>
+
+                              <button
+                                  onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleStar(chat.id);
+                                  }}
+                                  className="p-1 rounded hover:bg-neutral-700"
+                              >
+                                  <Star
+                                      size={12}
+                                      fill={chat.starred ? "#facc15" : "none"}
+                                      color={chat.starred ? "#facc15" : palette.textMuted}
+                                      className="transition-colors group-hover:text-yellow-400"
+                                  />
+                              </button>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })
+            )}
           </div>
 
           {/* Database status */}

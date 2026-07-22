@@ -7,6 +7,12 @@ from app.database import engine
 
 class SchemaMetadataService:
 
+    def __init__(self):
+
+        self._database_metadata = None
+
+        self._table_metadata = None
+
     async def get_columns(self):
 
         query = """
@@ -156,6 +162,9 @@ class SchemaMetadataService:
         
     async def get_database_metadata(self):
 
+        if self._database_metadata is not None:
+            return self._database_metadata
+
         metadata = {
 
             "tables": await self.get_tables(),
@@ -170,9 +179,14 @@ class SchemaMetadataService:
 
         }
 
+        self._database_metadata = metadata
+
         return metadata
     
     async def get_table_metadata(self):
+
+        if self._table_metadata is not None:
+            return self._table_metadata
 
         database = await self.get_database_metadata()
 
@@ -213,4 +227,12 @@ class SchemaMetadataService:
                 }
             )
 
+        self._table_metadata = table_metadata
+
         return table_metadata
+    
+    def clear_cache(self):
+
+        self._database_metadata = None
+
+        self._table_metadata = None
