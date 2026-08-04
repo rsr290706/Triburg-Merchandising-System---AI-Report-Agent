@@ -1,6 +1,6 @@
 import json
 import uuid
-
+from app.utils.cache_guard import cache_safe
 from app.vectorstore.chroma_client import ChromaService
 
 class SemanticCacheService:
@@ -27,13 +27,13 @@ class SemanticCacheService:
 
         print(f"[Semantic Cache] Deleted {len(ids)} entries.")
     
-    def search(self, question: str, threshold: float = 0.85):
+    async def search(self, question: str, threshold: float = 0.95):
 
         print("=" * 50)
         print("[Semantic Cache] Searching...")
         print("Question:", question)
 
-        embedding = self.chroma.get_embedding(question)
+        embedding = await self.chroma.get_embedding(question)
 
         results = self.chroma.cache_collection.query(
             query_embeddings=[embedding],
@@ -64,19 +64,33 @@ class SemanticCacheService:
 
         metadata = results["metadatas"][0][0]
 
+        cached_question = metadata.get(
+            "question",
+            results["documents"][0][0]
+        )
+
+        if not cache_safe(
+            cached_question,
+            question,
+        ):
+            print("[Semantic Cache] MISS (entity mismatch)")
+            print("=" * 50)
+            return None
+
         return {
             "generated_sql": metadata["sql"],
-            "cached": True
+            "cached": True,
         }
     
-    def store(self, question, sql):
-      embedding = self.chroma.get_embedding(question)
+    async def store(self, question, sql):
+      embedding = await self.chroma.get_embedding(question)
   
       self.chroma.cache_collection.upsert(
-          ids=[str(uuid.uuid4())],
-          documents=[question],
-          embeddings=[embedding],
-          metadatas=[{
-              "sql": sql,
-          }]
+        ids=[str(uuid.uuid4())],
+        documents=[question],
+        embeddings=[embedding],
+        metadatas=[{
+            "sql": sql,
+            "question": question,
+        }]
       )

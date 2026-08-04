@@ -60,8 +60,6 @@ class SchemaService:
                 if df.empty:
                     continue
 
-                df.columns = self.profiler.clean_columns(df.columns)
-
                 df = detect_date_columns(df)
                 df = detect_numeric_columns(df)
 

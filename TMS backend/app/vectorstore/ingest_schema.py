@@ -1,6 +1,7 @@
 import asyncio
 from app.services.schema_service import SchemaService
 from app.vectorstore.chroma_client import ChromaService
+from app.slm.node_builder import NodeBuilder
 
 
 async def ingest():
@@ -21,9 +22,19 @@ async def ingest():
 
     chroma.clear_schema()
 
+    nodes = NodeBuilder.build(documents)
+
+    print("=" * 80)
+    print("NODE IDS BEFORE PIPELINE")
+    
+    for node in nodes:
+        print(node.node_id)
+    
+    print("=" * 80)
+
     print("Step 3: Uploading documents")
 
-    chroma.add_documents(documents)
+    chroma.add_documents(nodes)
 
     print(f"Inserted {len(documents)} documents")
 

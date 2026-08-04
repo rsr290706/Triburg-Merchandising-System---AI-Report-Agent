@@ -1,5 +1,6 @@
 from __future__ import annotations
 from app.metadata.column_profiles import COLUMN_PROFILES
+import re
 try:
     from rapidfuzz import fuzz
 
@@ -165,22 +166,18 @@ def build_fallback_profile(column_name: str) -> dict:
         "inferred": True,
     }
 
-def build_query_expansion(
-    question: str,
-    profiles: dict[str, dict],
-) -> str:
 
-    expanded = question
-    lower_question = question.lower()
 
+def _contains_alias(alias: str, question_tokens: set[str]) -> bool:
+    alias_tokens = re.findall(r"[a-z0-9]+", alias.lower())
+    return all(t in question_tokens for t in alias_tokens)
+
+def build_query_expansion(question, profiles):
+    tokens = set(re.findall(r"[a-z0-9]+", question.lower()))
+    expanded_terms = []
     for profile_name, profile in profiles.items():
-
         aliases = profile.get("aliases", [])
-
-        if any(alias.lower() in lower_question for alias in aliases):
-
-            expanded += " " + profile_name
-
-            expanded += " " + " ".join(aliases)
-
-    return expanded
+        if any(_contains_alias(a, tokens) for a in aliases):
+            expanded_terms.append(profile_name)
+            expanded_terms.extend(aliases)
+    return question + " " + " ".join(dict.fromkeys(expanded_terms))  # dedup preserving order

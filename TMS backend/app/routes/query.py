@@ -65,7 +65,7 @@ async def query(request: QueryRequest):
 
     try:
         if request.dataset_id:
-            schema = file_rag.retrieve_schema(
+            schema = await file_rag.retrieve_schema(
                 request.dataset_id,
                 request.question
             )
@@ -76,19 +76,23 @@ async def query(request: QueryRequest):
                 print(item["text"])
             print("=" * 80)
 
-            schema_text = ai_service.build_schema_context(schema)
+            schema_text = ai_service.build_schema_context(
+                schema,
+                request.question,
+            )
 
             sql = await ai_service.generate_file_sql(
                 schema=schema_text,
                 user_query=request.question,
             )
 
+            sql = validate_sql(sql)
             print("=" * 80)
             print("GENERATED SQL")
             print(sql)
             print("=" * 80)
 
-            rows = imported_files.execute_query(
+            rows = await imported_files.execute_query(
                 request.dataset_id,
                 sql
             )
@@ -104,7 +108,7 @@ async def query(request: QueryRequest):
 
         print("STEP 1 - Semantic cache")
 
-        cached = semantic_cache.search(request.question)
+        cached = await semantic_cache.search(request.question)
         
         print("STEP 2 - Cache finished")
 
@@ -127,7 +131,7 @@ async def query(request: QueryRequest):
 
         print("STEP 3 - Retrieving schema")
 
-        schema = rag_service.retrieve_schema(request.question)
+        schema = await rag_service.retrieve_schema(request.question)
         
         print(schema)
 
@@ -159,7 +163,7 @@ async def query(request: QueryRequest):
             "source": "database"
         }
 
-        semantic_cache.store(
+        await semantic_cache.store(
             request.question,
             sql
         )
@@ -193,7 +197,7 @@ async def query(request: QueryRequest):
         }
     }
 )
-def clear_cache():
+async def clear_cache():
 
     semantic_cache.clear()
 
@@ -218,21 +222,24 @@ async def export_excel(request: QueryRequest):
 
     try:
         if request.dataset_id:
-            schema = file_rag.retrieve_schema(
+            schema = await file_rag.retrieve_schema(
                 request.dataset_id,
                 request.question
             )
 
-            schema_text = ai_service.build_schema_context(schema)
+            schema_text = ai_service.build_schema_context(
+                schema,
+                request.question,
+            )
 
             sql = await ai_service.generate_file_sql(
                 schema=schema_text,
                 user_query=request.question
             )
             sql = validate_sql(sql)
-            rows = imported_files.execute_query(request.dataset_id, sql)
+            rows = await imported_files.execute_query(request.dataset_id, sql)
         else:
-            cached = semantic_cache.search(request.question)
+            cached = await semantic_cache.search(request.question)
 
             if cached:
                 print("[Semantic Cache Hit - Export]")
@@ -241,7 +248,7 @@ async def export_excel(request: QueryRequest):
                 sql = validate_sql(sql)
                 rows = await sql_service.execute_query(sql)
             else:
-                schema = rag_service.retrieve_schema(request.question)
+                schema = await rag_service.retrieve_schema(request.question)
 
                 sql = await ai_service.generate_sql(
                     retrieved_schema=schema["results"],

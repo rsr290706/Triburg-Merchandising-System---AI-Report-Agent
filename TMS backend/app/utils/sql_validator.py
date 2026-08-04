@@ -1,17 +1,17 @@
 import re
+import sqlglot
+from sqlglot import exp
 
-FORBIDDEN_KEYWORDS = {
-    "UNION",
-    "INTO",
-    "EXEC",
-    "INFORMATION_SCHEMA",
-    "UPDATE",
-    "DELETE",
-    "DROP",
-    "ALTER",
-    "INSERT",
-    "TRUNCATE",
-    "CREATE"
+ALLOWED_TABLES = {
+    "buyerdivision",
+    "country",
+    "factory",
+    "merchant",
+    "orders",
+    "qa",
+    "style",
+    "team",
+    "team_group",
 }
 
 
@@ -35,15 +35,31 @@ def validate_sql(sql: str) -> str:
 
     sql = statements[0]
 
-    sql_upper = sql.upper()
+    try:
+        parsed = sqlglot.parse_one(
+            sql,
+            read="mysql"
+        )
+    except Exception:
+        raise ValueError("Invalid SQL syntax.")
 
-    # Must start with SELECT
-    if not sql_upper.strip().startswith("SELECT"):
-        raise ValueError("Only SELECT queries are allowed.")
+    if not isinstance(parsed, (exp.Select, exp.With)):
+        raise ValueError(
+            "Only SELECT/WITH queries are allowed."
+        )
 
-    # Check forbidden keywords
-    for keyword in FORBIDDEN_KEYWORDS:
-        if keyword in sql_upper:
-            raise ValueError(f"Forbidden SQL keyword detected: {keyword}")
+    tables = {
+        table.name.lower()
+        for table in parsed.find_all(exp.Table)
+    }
 
-    return sql
+    invalid = tables - ALLOWED_TABLES
+
+    if invalid:
+        raise ValueError(
+            f"Disallowed tables: {invalid}"
+        )
+
+    return parsed.sql(
+        dialect="mysql"
+    )

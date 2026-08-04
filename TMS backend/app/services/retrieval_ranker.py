@@ -1,21 +1,31 @@
 from __future__ import annotations
-
-from collections import Counter
+import re
 from typing import Any
 
 
 class RetrievalRanker:
 
-    EMBEDDING_WEIGHT = 0.7
-    KEYWORD_WEIGHT = 0.3
+    EMBEDDING_WEIGHT = 0.4
+    KEYWORD_WEIGHT = 0.6
 
     @staticmethod
     def _tokenize(text: str) -> set[str]:
-        return {
-            token.lower()
-            for token in text.replace("_", " ").split()
-            if token.strip()
-        }
+
+        words = re.findall(
+            r"[a-z0-9]+",
+            text.lower(),
+        )
+
+        normalized = set()
+
+        for word in words:
+
+            if word.endswith("s") and len(word) > 3:
+                word = word[:-1]
+
+            normalized.add(word)
+
+        return normalized
 
     @classmethod
     def keyword_overlap(
@@ -34,30 +44,38 @@ class RetrievalRanker:
 
         return overlap / len(q)
 
-    @staticmethod
-    def normalize_distance(distance: float) -> float:
-
-        similarity = 1 - distance
-
-        return max(0.0, min(1.0, similarity))
-
     @classmethod
-    def rerank(
-        cls,
-        question: str,
-        results: list[dict[str, Any]],
-    ) -> list[dict[str, Any]]:
+    def rerank(cls, question, results):
+    
+        if not results:
+            return []
+    
+        distances = [r["distance"] for r in results]
+
+        min_distance = min(distances)
+        max_distance = max(distances)
 
         for result in results:
 
-            embedding_score = cls.normalize_distance(
-                result["distance"]
-            )
+            if max_distance == min_distance:
+
+                embedding_score = 1.0
+
+            else:
+
+                embedding_score = (
+                    max_distance - result["distance"]
+                ) / (
+                    max_distance - min_distance
+                )
 
             keyword_score = cls.keyword_overlap(
                 question,
                 result["text"],
             )
+
+            result["embedding_score"] = embedding_score
+            result["keyword_score"] = keyword_score
 
             result["retrieval_score"] = (
                 cls.EMBEDDING_WEIGHT * embedding_score

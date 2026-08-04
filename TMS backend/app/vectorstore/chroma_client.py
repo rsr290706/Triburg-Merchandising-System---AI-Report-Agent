@@ -1,6 +1,6 @@
 import chromadb
+import httpx
 import requests
-
 
 from app.config import CHROMA_DB_PATH , OLLAMA_URL
 
@@ -12,10 +12,24 @@ class ChromaService:
 
     def __init__(self):
 
+        self.http = httpx.AsyncClient(
+            timeout=60
+        )
+
         self.client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 
         self.collection = self.client.get_or_create_collection(
-            name="TMS_schema"
+            name="TMS_schema",
+            metadata={
+                "hnsw:space": "cosine"
+            }
+        )
+
+        self.file_schema_collection = self.client.get_or_create_collection(
+            name="file_schema",
+            metadata={
+                "hnsw:space": "cosine"
+            }
         )
 
         self.cache_collection = self.client.get_or_create_collection(
@@ -25,13 +39,10 @@ class ChromaService:
             }
         )
 
-        self.file_schema_collection = self.client.get_or_create_collection(
-            name="file_schema"
-        )
 
-    def get_embedding(self, text):
+    async def get_embedding(self, text):
 
-        response = requests.post(
+        response = await self.http.post(
 
             OLLAMA_URL,
 
@@ -53,6 +64,31 @@ class ChromaService:
 
         if isinstance(text, str):
 
+            return embeddings[0]
+
+        return embeddings
+
+
+    def get_embedding_sync(self, text):
+
+        response = requests.post(
+
+            OLLAMA_URL,
+
+            json={
+                "model": EMBEDDING_MODEL,
+                "input": text,
+            },
+
+            timeout=60,
+
+        )
+
+        response.raise_for_status()
+
+        embeddings = response.json()["embeddings"]
+
+        if isinstance(text, str):
             return embeddings[0]
 
         return embeddings
@@ -137,18 +173,42 @@ class ChromaService:
             metadatas=[metadata or {}],
         )
 
-    def add_documents(self, documents: list[dict]):
+    def add_documents(self, documents):
 
-        texts = [doc["text"] for doc in documents]
+        texts = []
+        ids = []
+        metadatas = []
+        embeddings = []
 
-        ids = [doc["id"] for doc in documents]
+        for doc in documents:
 
-        metadatas = [
-            doc.get("metadata", {})
-            for doc in documents
-        ]
+            #
+            # LlamaIndex TextNode
+            #
+            if hasattr(doc, "text"):
 
-        embeddings = self.get_embedding(texts)
+                texts.append(doc.text)
+                ids.append(doc.node_id)
+                metadatas.append(doc.metadata)
+
+                if getattr(doc, "embedding", None) is not None:
+                    embeddings.append(doc.embedding)
+
+            #
+            # Legacy dictionary
+            #
+            else:
+
+                texts.append(doc["text"])
+                ids.append(doc["id"])
+                metadatas.append(doc.get("metadata", {}))
+
+        #
+        # Only compute embeddings if they were
+        # not already created by LlamaIndex.
+        #
+        if len(embeddings) != len(texts):
+            embeddings = self.get_embedding_sync(texts)
 
         self.collection.upsert(
             ids=ids,
