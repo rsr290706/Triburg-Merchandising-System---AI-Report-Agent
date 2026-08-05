@@ -84,9 +84,13 @@ function Select({ value, options, onChange, placeholder }: SelectProps) {
 
 interface AnalyticsPanelProps {
   data: Record<string, unknown>[];
+  formatColumnName: (column: string) => string;
 }
 
-export function AnalyticsPanel({ data }: AnalyticsPanelProps) {
+export function AnalyticsPanel({
+    data,
+    formatColumnName,
+    }: AnalyticsPanelProps) {
   const suggestions = useMemo(() => inferChartSuggestions(data), [data]);
   const columns = useMemo(() => analyzeColumns(data), [data]);
   const visualizable = useMemo(() => canVisualize(data), [data]);

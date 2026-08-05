@@ -24,6 +24,8 @@ import {
   Trash2,
   Database,
   ChevronDown,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { GraphicWalker } from "@kanaries/graphic-walker";
 
@@ -175,6 +177,7 @@ export default function App() {
   database: "",
   tables: 0,
   });
+  const [expandedPanel, setExpandedPanel] = useState<null | "table" | "analytics">(null);
 
   useEffect(() => {
 
@@ -1323,13 +1326,19 @@ if (!input.trim())
 
                 {/* Two-panel grid */}
                 <div
+                  className="results-grid"
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "40% 1fr",
-                    gap: 18,
+                    gridTemplateColumns:
+                      expandedPanel === "table"
+                        ? "1fr 0fr"
+                        : expandedPanel === "analytics"
+                        ? "0fr 1fr"
+                        : "40% 1fr",
+                    gap: expandedPanel ? 0 : 18,
                     alignItems: "stretch",
+                    transition: "grid-template-columns 280ms ease-in-out, gap 280ms ease-in-out",
                   }}
-                  className="results-grid"
                 >
                   {/* ── LEFT: Data Table card ── */}
                   <div
@@ -1340,41 +1349,92 @@ if (!input.trim())
                       overflow: "hidden",
                       display: "flex",
                       flexDirection: "column",
-                      minHeight: 620,
+                      height: "72vh",
+                      opacity: expandedPanel === "analytics" ? 0 : 1,
+                      transform: expandedPanel === "analytics" ? "scale(0.98)" : "scale(1)",
+                      transition: "opacity 280ms ease-in-out, transform 280ms ease-in-out",
+                      pointerEvents: expandedPanel === "analytics" ? "none" : "auto",
                     }}
                   >
                     {/* Card header */}
                     <div
                       style={{
-                        padding: 16,
+                        padding: "12px 16px",
                         borderBottom: `1px solid ${palette.border}`,
                         flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
                       }}
                     >
-                      <p
+                      <div>
+                        <p
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: palette.text,
+                            margin: 0,
+                          }}
+                        >
+                          📄 Data Table
+                        </p>
+                        <p
+                          style={{
+                            fontSize: 11,
+                            color: palette.textMuted,
+                            marginTop: 3,
+                          }}
+                        >
+                          {result.length} row{result.length !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+
+                      {/* Expand / collapse button */}
+                      <button
+                        onClick={() =>
+                          setExpandedPanel(
+                            expandedPanel === "table" ? null : "table"
+                          )
+                        }
+                        title={expandedPanel === "table" ? "Restore split" : "Expand table"}
                         style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: palette.text,
-                          margin: 0,
-                        }}
-                      >
-                        📄 Data Table
-                      </p>
-                      <p
-                        style={{
-                          fontSize: 11,
+                          background: "transparent",
+                          border: "none",
+                          borderRadius: 6,
+                          padding: 6,
+                          cursor: "pointer",
                           color: palette.textMuted,
-                          marginTop: 3,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "background 150ms, color 150ms",
+                          flexShrink: 0,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = palette.hover;
+                          e.currentTarget.style.color = palette.text;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                          e.currentTarget.style.color = palette.textMuted;
                         }}
                       >
-                        {result.length} row{result.length !== 1 ? "s" : ""}
-                      </p>
+                        {expandedPanel === "table" ? (
+                          <Minimize2 size={14} strokeWidth={1.8} />
+                        ) : (
+                          <Maximize2 size={14} strokeWidth={1.8} />
+                        )}
+                      </button>
                     </div>
 
-                    {/* Card body — table */}
+                    {/* Card body — table (scrolls) */}
                     <div
-                      style={{ flex: 1, overflowX: "auto", overflowY: "auto" }}
+                      style={{
+                        flex: 1,
+                        overflowX: "auto",
+                        overflowY: "auto",
+                        minHeight: 0,
+                      }}
                     >
                       {result.length > 0 ? (
                         <table
@@ -1467,11 +1527,11 @@ if (!input.trim())
                       )}
                     </div>
 
-                    {/* Card footer — export button */}
+                    {/* Card footer — export button (always pinned) */}
                     <div
                       style={{
                         borderTop: `1px solid ${palette.border}`,
-                        padding: 16,
+                        padding: "12px 16px",
                         display: "flex",
                         justifyContent: "flex-end",
                         flexShrink: 0,
@@ -1488,6 +1548,7 @@ if (!input.trim())
                           fontSize: 12,
                           padding: "8px 14px",
                           cursor: exporting ? "not-allowed" : "pointer",
+                          fontFamily: "inherit",
                         }}
                       >
                         {exporting ? "Exporting..." : "Export Excel"}
@@ -1504,44 +1565,93 @@ if (!input.trim())
                       overflow: "hidden",
                       display: "flex",
                       flexDirection: "column",
-                      minHeight: 620,
+                      height: "72vh",
+                      opacity: expandedPanel === "table" ? 0 : 1,
+                      transform: expandedPanel === "table" ? "scale(0.98)" : "scale(1)",
+                      transition: "opacity 280ms ease-in-out, transform 280ms ease-in-out",
+                      pointerEvents: expandedPanel === "table" ? "none" : "auto",
                     }}
                   >
                     {/* Card header */}
                     <div
                       style={{
-                        padding: 16,
+                        padding: "12px 16px",
                         borderBottom: `1px solid ${palette.border}`,
                         flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
                       }}
                     >
-                      <p
+                      <div>
+                        <p
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: palette.text,
+                            margin: 0,
+                          }}
+                        >
+                          📊 Analytics
+                        </p>
+                        <p
+                          style={{
+                            fontSize: 11,
+                            color: palette.textMuted,
+                            marginTop: 3,
+                          }}
+                        >
+                          Explore your query visually
+                        </p>
+                      </div>
+
+                      {/* Expand / collapse button */}
+                      <button
+                        onClick={() =>
+                          setExpandedPanel(
+                            expandedPanel === "analytics" ? null : "analytics"
+                          )
+                        }
+                        title={expandedPanel === "analytics" ? "Restore split" : "Expand analytics"}
                         style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: palette.text,
-                          margin: 0,
-                        }}
-                      >
-                        📊 Analytics
-                      </p>
-                      <p
-                        style={{
-                          fontSize: 11,
+                          background: "transparent",
+                          border: "none",
+                          borderRadius: 6,
+                          padding: 6,
+                          cursor: "pointer",
                           color: palette.textMuted,
-                          marginTop: 3,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "background 150ms, color 150ms",
+                          flexShrink: 0,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = palette.hover;
+                          e.currentTarget.style.color = palette.text;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                          e.currentTarget.style.color = palette.textMuted;
                         }}
                       >
-                        Explore your query visually
-                      </p>
+                        {expandedPanel === "analytics" ? (
+                          <Minimize2 size={14} strokeWidth={1.8} />
+                        ) : (
+                          <Maximize2 size={14} strokeWidth={1.8} />
+                        )}
+                      </button>
                     </div>
 
-                    {/* Card body — simplified analytics panel */}
-                    <AnalyticsPanel data={result ?? []} />
+                    {/* Card body — AnalyticsPanel fills remaining height */}
+                    <AnalyticsPanel
+                      data={result ?? []}
+                      formatColumnName={formatColumnName}
+                    />
                   </div>
                 </div>
 
-                {/* Responsive: stack on small screens */}
+                {/* Responsive: stack on small screens, disable expand */}
                 <style>{`
                   @media (max-width: 1024px) {
                     .results-grid {
