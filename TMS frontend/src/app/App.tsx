@@ -1253,8 +1253,10 @@ if (!input.trim())
                     fontSize: 13,
                     lineHeight: 1.8,
                     fontFamily: "JetBrains Mono, Consolas, monospace",
-                    whiteSpace: "pre-wrap",
-                    overflowX: "hidden",
+                    whiteSpace: "pre",
+                    overflowX: "auto",
+                    overflowY: "auto",
+                    maxHeight: 200,
                     margin: 0,
                   }}
                 >
