@@ -161,34 +161,67 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
   const enableAnimation = data.length < 100;
 
   const truncateTick = useCallback((value: unknown) => {
-    const text = String(value);
+    if (typeof value !== "number") {
+      const num = Number(value);
 
-    if (text.length <= 14) return text;
+      // If it isn't a number, leave it unchanged
+      if (Number.isNaN(num)) return String(value);
 
-    return text.slice(0, 14) + "...";
+      value = num;
+    }
+
+    const n = value as number;
+
+    if (Math.abs(n) >= 1_000_000_000)
+      return `${(n / 1_000_000_000).toFixed(1)}B`;
+
+    if (Math.abs(n) >= 1_000_000)
+      return `${(n / 1_000_000).toFixed(1)}M`;
+
+    if (Math.abs(n) >= 1_000)
+      return `${(n / 1_000).toFixed(1)}K`;
+
+    return n.toString();
   }, []);
 
   const CustomXAxisTick = ({ x, y, payload }: any) => {
     const words = String(payload.value).split(" ");
 
+    const lines: string[] = [];
+    let current = "";
+
+    words.forEach((word) => {
+      if ((current + " " + word).trim().length <= 14) {
+        current = (current + " " + word).trim();
+      } else {
+        lines.push(current);
+        current = word;
+      }
+    });
+
+    if (current) lines.push(current);
+
+    const display = lines.slice(0, 2);
+
+    if (lines.length > 2) {
+      display[1] += "...";
+    }
+
     return (
       <g transform={`translate(${x},${y})`}>
         <text
-          x={0}
-          y={0}
-          dy={16}
           textAnchor="middle"
           fill={palette.textMuted}
           fontSize={11}
           fontFamily="JetBrains Mono, monospace"
         >
-          {words.map((word: string, index: number) => (
+          {display.map((line, i) => (
             <tspan
-              key={index}
+              key={i}
               x="0"
-              dy={index === 0 ? 0 : 12}
+              dy={i === 0 ? 16 : 12}
             >
-              {word}
+              {line}
             </tspan>
           ))}
         </text>
@@ -246,7 +279,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
               angle={0}
               textAnchor="middle"
               interval={0}
-              height={80}
+              height={55}
             />
             <YAxis
               tick={tickStyle}
@@ -292,7 +325,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
             angle={0}
             textAnchor="middle"
             interval={0}
-            height={80}
+            height={55}
           />
           <YAxis
             tick={tickStyle}
