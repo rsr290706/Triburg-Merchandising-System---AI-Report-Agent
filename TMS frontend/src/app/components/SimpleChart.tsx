@@ -55,6 +55,73 @@ const tooltipStyle = {
   fontFamily: "JetBrains Mono, monospace",
 };
 
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+  xField: string | null;
+  yField: string | null;
+}
+
+const CustomTooltip = memo(
+  ({ active, payload, xField, yField }: CustomTooltipProps) => {
+    if (!active || !payload?.length) return null;
+
+    const row = payload[0].payload;
+    const value = payload[0].value;
+
+    return (
+      <div
+        style={{
+          background: "#18181B",
+          border: `1px solid ${palette.border}`,
+          borderRadius: 12,
+          padding: "12px 16px",
+          minWidth: 220,
+          boxShadow: "0 12px 32px rgba(0,0,0,.45)",
+          fontFamily:
+            "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        }}
+      >
+        <div
+          style={{
+            color: "#FAFAFA",
+            fontSize: 14,
+            fontWeight: 600,
+            marginBottom: 8,
+            wordBreak: "break-word",
+          }}
+        >
+          {xField ? String(row[xField]) : ""}
+        </div>
+
+        <div
+          style={{
+            color: "#A1A1AA",
+            fontSize: 12,
+            textTransform: "uppercase",
+            letterSpacing: ".05em",
+          }}
+        >
+          {yField}
+        </div>
+
+        <div
+          style={{
+            color: COLORS[0],
+            fontSize: 18,
+            fontWeight: 700,
+            marginTop: 4,
+          }}
+        >
+          {Number(value).toLocaleString()}
+        </div>
+      </div>
+    );
+  }
+);
+
 export function SimpleChartComponent({ type, data, xField, yField }: SimpleChartProps) {
   if (!yField) return null;
 
@@ -96,10 +163,40 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
   const truncateTick = useCallback((value: unknown) => {
     const text = String(value);
 
-    return text.length > 10
-        ? text.slice(0, 10) + "..."
-        : text;
-    }, []);
+    if (text.length <= 14) return text;
+
+    return text.slice(0, 14) + "...";
+  }, []);
+
+  const CustomXAxisTick = ({ x, y, payload }: any) => {
+    const text = String(payload.value);
+
+    const first =
+      text.length > 14 ? text.slice(0, 14) : text;
+
+    const second =
+      text.length > 14 ? text.slice(14, 28) : "";
+
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0}
+          y={0}
+          dy={16}
+          textAnchor="middle"
+          fill={palette.textMuted}
+          fontSize={11}
+        >
+          <tspan x="0">{first}</tspan>
+          {second && (
+            <tspan x="0" dy="12">
+              {second}
+            </tspan>
+          )}
+        </text>
+      </g>
+    );
+  };
 
   
   
@@ -145,7 +242,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
             <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
             <XAxis
               dataKey={xField ?? undefined}
-              tick={tickStyle}
+              tick={<CustomXAxisTick />}
               tickLine={false}
               axisLine={{ stroke: palette.border }}
               angle={0}
@@ -162,16 +259,12 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
             />
             <Tooltip
               cursor={false}
-              contentStyle={{
-                background: "#1A1A1A",
-                border: `1px solid ${palette.border}`,
-                borderRadius: 10,
-                padding: "12px 14px",
-              }}
-              formatter={(value: number, _name, props) => [
-                Number(value).toLocaleString(),
-                props.payload?.[xField ?? ""],
-              ]}
+              content={
+                <CustomTooltip
+                  xField={xField}
+                  yField={yField}
+                />
+              }
             />
             <Bar
                   dataKey={yField}
@@ -195,7 +288,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
           <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
           <XAxis
             dataKey={xField ?? undefined}
-            tick={tickStyle}
+            tick={<CustomXAxisTick />}
             tickLine={false}
             axisLine={{ stroke: palette.border }}
             angle={0}
@@ -212,16 +305,12 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
           />
           <Tooltip
             cursor={false}
-            contentStyle={{
-              background: "#1A1A1A",
-              border: `1px solid ${palette.border}`,
-              borderRadius: 10,
-              padding: "12px 14px",
-            }}
-            formatter={(value: number, _name, props) => [
-              Number(value).toLocaleString(),
-              props.payload?.[xField ?? ""],
-            ]}
+            content={
+              <CustomTooltip
+                xField={xField}
+                yField={yField}
+              />
+            }
           />
           <Line
             type="monotone"
@@ -256,16 +345,12 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
           </Pie>
           <Tooltip
             cursor={false}
-            contentStyle={{
-              background: "#1A1A1A",
-              border: `1px solid ${palette.border}`,
-              borderRadius: 10,
-              padding: "12px 14px",
-            }}
-            formatter={(value: number, _name, props) => [
-              Number(value).toLocaleString(),
-              props.payload?.[xField ?? ""],
-            ]}
+            content={
+              <CustomTooltip
+                xField={xField}
+                yField={yField}
+              />
+            }
           />
           <Legend
             wrapperStyle={{ fontSize: 11, color: palette.textMuted, fontFamily: "JetBrains Mono, monospace" }}
@@ -285,7 +370,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
             tickFormatter={truncateTick}
             type="number"
             name={xField ?? ""}
-            tick={tickStyle}
+            tick={<CustomXAxisTick />}
             tickLine={false}
             axisLine={{ stroke: palette.border }}
           />
@@ -300,16 +385,12 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
           />
           <Tooltip
             cursor={false}
-            contentStyle={{
-              background: "#1A1A1A",
-              border: `1px solid ${palette.border}`,
-              borderRadius: 10,
-              padding: "12px 14px",
-            }}
-            formatter={(value: number, _name, props) => [
-              Number(value).toLocaleString(),
-              props.payload?.[xField ?? ""],
-            ]}
+            content={
+              <CustomTooltip
+                xField={xField}
+                yField={yField}
+              />
+            }
           />
           <Scatter data={normalized} fill={COLORS[0]} isAnimationActive={enableAnimation} />
         </ScatterChart>
