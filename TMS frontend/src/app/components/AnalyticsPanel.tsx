@@ -1,4 +1,4 @@
-// src/components/AnalyticsPanel.tsx
+
 
 import { useState, useMemo } from "react";
 import { ChevronDown, BarChart2, TrendingUp, PieChart, Maximize2, X } from "lucide-react";
@@ -205,13 +205,28 @@ export function AnalyticsPanel({
       </div>
 
       {/* ── Chart area ── */}
-      <div style={{ flex: 1, padding: "16px", minHeight: 0, overflow: "hidden" }}>
-        <SimpleChart
-          type={chartType}
-          data={data}
-          xField={xField || null}
-          yField={yField || null}
-        />
+      <div
+          style={{
+              flex: 1,
+              minHeight: 0,
+              overflow: "hidden",
+              display: "flex",
+              padding: 16,
+          }}
+      >
+        <div
+            style={{
+                flex: 1,
+                minHeight: 0,
+            }}
+        >
+            <SimpleChart
+                type={chartType}
+                data={data}
+                xField={xField || null}
+                yField={yField || null}
+            />
+        </div>
       </div>
 
       {/* ── Suggested charts row ── */}

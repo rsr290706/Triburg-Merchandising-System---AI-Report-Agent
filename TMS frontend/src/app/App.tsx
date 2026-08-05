@@ -1552,13 +1552,10 @@ if (!input.trim())
                   <div
                     onClick={() => setFullscreenPanel(null)}
                     style={{
-                      position: "fixed",
-                      inset: 0,
-                      zIndex: 9999,
-                      background: "rgba(0,0,0,0.82)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                        position: "fixed",
+                        inset: 0,
+                        zIndex: 9999,
+                        background: "rgba(0,0,0,.82)",
                     }}
                   >
                     {/* Panel — stop propagation so inside clicks don't close */}
@@ -1566,16 +1563,21 @@ if (!input.trim())
                       className="fs-panel-enter"
                       onClick={(e) => e.stopPropagation()}
                       style={{
-                        width: "90vw",
-                        height: "90vh",
-                        maxWidth: 1700,
-                        borderRadius: 16,
-                        background: palette.bg,
-                        border: `1px solid ${palette.border}`,
-                        boxShadow: "0 20px 80px rgba(0,0,0,0.45)",
-                        display: "flex",
-                        flexDirection: "column",
-                        overflow: "hidden",
+                          position: "fixed",
+                          inset: 0,
+                          width: "100vw",
+                          height: "100vh",
+                          maxWidth: "none",
+                          maxHeight: "none",
+
+                          borderRadius: 0,
+
+                          background: palette.bg,
+                          border: "none",
+
+                          display: "flex",
+                          flexDirection: "column",
+                          overflow: "hidden",
                       }}
                     >
                       {/* Modal header */}
@@ -1741,10 +1743,19 @@ if (!input.trim())
                         </>
                       ) : (
                         /* Analytics fills the modal body */
-                        <AnalyticsPanel
-                          data={result ?? []}
-                          formatColumnName={formatColumnName}
-                        />
+                        <div
+                          style={{
+                            flex: 1,
+                            minHeight: 0,
+                            display: "flex",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <AnalyticsPanel
+                            data={result ?? []}
+                            formatColumnName={formatColumnName}
+                          />
+                        </div>
                       )}
                     </div>
                   </div>

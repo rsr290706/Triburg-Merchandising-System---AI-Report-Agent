@@ -1,4 +1,4 @@
-// src/components/SimpleChart.tsx
+
 
 import {
   BarChart,
@@ -132,9 +132,14 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
     [normalized]
     );
 
+  const chartStyle = {
+    width: "100%",
+    height: "100%",
+  };
+
   if (type === "bar") {
     return (
-      <ResponsiveContainer width="100%" height="80%" debounce={100}>
+      <ResponsiveContainer width="100%" height="100%" debounce={100}>
         <BarChart data={normalized} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
           <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
           <XAxis
@@ -175,7 +180,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
 
   if (type === "line") {
     return (
-      <ResponsiveContainer width="100%" height="80%" debounce={100}>
+      <ResponsiveContainer width="100%" height="100%" debounce={100}>
         <LineChart data={normalized} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
           <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
           <XAxis
@@ -248,7 +253,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
 
   if (type === "scatter") {
     return (
-      <ResponsiveContainer width="100%" height="80%" debounce={100}>
+      <ResponsiveContainer width="100%" height="100%" debounce={100}>
         <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={palette.border} />
           <XAxis
