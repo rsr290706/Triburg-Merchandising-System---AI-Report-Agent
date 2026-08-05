@@ -1297,14 +1297,15 @@ if (!input.trim())
                       fontSize: 13,
                       lineHeight: 1.8,
                       fontFamily: "JetBrains Mono, Consolas, monospace",
-                      whiteSpace: "pre",
-                      overflowX: "auto",
-                      overflowY: "auto",
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                      overflowWrap: "anywhere",
+                      overflow: "auto",
                       maxHeight: 200,
                       margin: 0,
                     }}
                   >
-                    {generatedSQL.replace(/\s+/g, " ").trim()}
+                    {generatedSQL.trim()}
                   </pre>
                 )}
               </div>
