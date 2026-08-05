@@ -154,19 +154,15 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             tickFormatter={truncateTick}
           />
           <Tooltip
-                formatter={tooltipFormatter}
-                contentStyle={tooltipStyle}
-                wrapperStyle={{
-                    outline: "none",
-                }}
-                cursor={{
-                    fill: "rgba(255,255,255,.03)",
-                }}
+            contentStyle={tooltipStyle}
+            wrapperStyle={{ outline: "none" }}
+            cursor={false}
             />
           <Bar
                 dataKey={yField}
                 isAnimationActive={enableAnimation}
                 fill={COLORS[0]}
+                activeBar={false}
                 radius={[6,6,0,0]}
                 maxBarSize={58}
                 barSize={56}
@@ -199,22 +195,17 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             tickFormatter={truncateTick}
           />
           <Tooltip
-                formatter={tooltipFormatter}
-                contentStyle={tooltipStyle}
-                wrapperStyle={{
-                    outline: "none",
-                }}
-                cursor={{
-                    fill: "rgba(255,255,255,.03)",
-                }}
+            contentStyle={tooltipStyle}
+            wrapperStyle={{ outline: "none" }}
+            cursor={false}
             />
           <Line
             type="monotone"
             dataKey={yField}
             stroke={COLORS[0]}
+            activeDot={false}
             strokeWidth={2}
             dot={{ fill: COLORS[0], r: 3 }}
-            activeDot={{ r: 5 }}
             isAnimationActive={enableAnimation}
           />
         </LineChart>
@@ -242,14 +233,9 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             {pieCells}
           </Pie>
           <Tooltip
-                formatter={tooltipFormatter}
-                contentStyle={tooltipStyle}
-                wrapperStyle={{
-                    outline: "none",
-                }}
-                cursor={{
-                    fill: "rgba(255,255,255,.03)",
-                }}
+            contentStyle={tooltipStyle}
+            wrapperStyle={{ outline: "none" }}
+            cursor={false}
             />
           <Legend
             wrapperStyle={{ fontSize: 11, color: palette.textMuted, fontFamily: "JetBrains Mono, monospace" }}
@@ -283,14 +269,9 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             width={55}
           />
           <Tooltip
-                formatter={tooltipFormatter}
-                contentStyle={tooltipStyle}
-                wrapperStyle={{
-                    outline: "none",
-                }}
-                cursor={{
-                    fill: "rgba(255,255,255,.03)",
-                }}
+            contentStyle={tooltipStyle}
+            wrapperStyle={{ outline: "none" }}
+            cursor={false}
             />
           <Scatter data={normalized} fill={COLORS[0]} isAnimationActive={enableAnimation} />
         </ScatterChart>
