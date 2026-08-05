@@ -1357,8 +1357,9 @@ if (!input.trim())
                                 width: idx === 0 ? 160 : "auto",
                                 minWidth: idx === 0 ? 160 : undefined,
 
-                                paddingLeft: 24,
-                                paddingRight: 20,
+                                textAlign: idx === 0 ? "center" : "left",
+                                paddingLeft: idx === 0 ? 0 : 24,
+                                paddingRight: idx === 0 ? 0 : 20,
 
                                 color: palette.textMuted,
                                 fontSize: 11,
@@ -1388,10 +1389,10 @@ if (!input.trim())
                                   width: j === 0 ? 160 : "auto",
                                   minWidth: j === 0 ? 160 : undefined,
 
-                                  paddingLeft: 24,
-                                  paddingRight: 20,
+                                  textAlign: j === 0 ? "center" : "left",
 
-                                  textAlign: "left",
+                                  paddingLeft: j === 0 ? 0 : 24,
+                                  paddingRight: j === 0 ? 0 : 20,
 
                                   color: palette.textSecondary,
 
