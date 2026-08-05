@@ -1520,7 +1520,70 @@ if (!input.trim())
                         height: "72vh",
                       }}
                     >
-                      ...
+                      {/* Card header */}
+                      <div
+                        style={{
+                          padding: "12px 16px",
+                          borderBottom: `1px solid ${palette.border}`,
+                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div>
+                          <p
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: palette.text,
+                              margin: 0,
+                            }}
+                          >
+                            📊 Analytics
+                          </p>
+
+                          <p
+                            style={{
+                              fontSize: 11,
+                              color: palette.textMuted,
+                              marginTop: 3,
+                            }}
+                          >
+                            Explore your query visually
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => setFullscreenPanel("analytics")}
+                          title="Open fullscreen"
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            borderRadius: 6,
+                            padding: 6,
+                            cursor: "pointer",
+                            color: palette.textMuted,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transition: "background 150ms, color 150ms",
+                            flexShrink: 0,
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = palette.hover;
+                            e.currentTarget.style.color = palette.text;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                            e.currentTarget.style.color = palette.textMuted;
+                          }}
+                        >
+                          <Maximize2 size={14} strokeWidth={1.8} />
+                        </button>
+                      </div>
+
+                      {/* Analytics */}
                       <AnalyticsPanel
                         data={result ?? []}
                         formatColumnName={formatColumnName}
