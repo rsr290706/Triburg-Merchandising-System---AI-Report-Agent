@@ -177,7 +177,7 @@ export default function App() {
   database: "",
   tables: 0,
   });
-  const [expandedPanel, setExpandedPanel] = useState<null | "table" | "analytics">(null);
+  const [fullscreenPanel, setFullscreenPanel] = useState<null | "table" | "analytics">(null);
 
   useEffect(() => {
 
@@ -315,6 +315,14 @@ export default function App() {
 
       loadDatabaseInfo();
 
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullscreenPanel(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -1324,20 +1332,14 @@ if (!input.trim())
                   Query Results
                 </p>
 
-                {/* Two-panel grid */}
+                {/* Two-panel grid — layout never changes */}
                 <div
                   className="results-grid"
                   style={{
                     display: "grid",
-                    gridTemplateColumns:
-                      expandedPanel === "table"
-                        ? "1fr 0fr"
-                        : expandedPanel === "analytics"
-                        ? "0fr 1fr"
-                        : "40% 1fr",
-                    gap: expandedPanel ? 0 : 18,
+                    gridTemplateColumns: "40% 1fr",
+                    gap: 18,
                     alignItems: "stretch",
-                    transition: "grid-template-columns 280ms ease-in-out, gap 280ms ease-in-out",
                   }}
                 >
                   {/* ── LEFT: Data Table card ── */}
@@ -1350,10 +1352,6 @@ if (!input.trim())
                       display: "flex",
                       flexDirection: "column",
                       height: "72vh",
-                      opacity: expandedPanel === "analytics" ? 0 : 1,
-                      transform: expandedPanel === "analytics" ? "scale(0.98)" : "scale(1)",
-                      transition: "opacity 280ms ease-in-out, transform 280ms ease-in-out",
-                      pointerEvents: expandedPanel === "analytics" ? "none" : "auto",
                     }}
                   >
                     {/* Card header */}
@@ -1368,35 +1366,16 @@ if (!input.trim())
                       }}
                     >
                       <div>
-                        <p
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: palette.text,
-                            margin: 0,
-                          }}
-                        >
+                        <p style={{ fontSize: 13, fontWeight: 600, color: palette.text, margin: 0 }}>
                           📄 Data Table
                         </p>
-                        <p
-                          style={{
-                            fontSize: 11,
-                            color: palette.textMuted,
-                            marginTop: 3,
-                          }}
-                        >
+                        <p style={{ fontSize: 11, color: palette.textMuted, marginTop: 3 }}>
                           {result.length} row{result.length !== 1 ? "s" : ""}
                         </p>
                       </div>
-
-                      {/* Expand / collapse button */}
                       <button
-                        onClick={() =>
-                          setExpandedPanel(
-                            expandedPanel === "table" ? null : "table"
-                          )
-                        }
-                        title={expandedPanel === "table" ? "Restore split" : "Expand table"}
+                        onClick={() => setFullscreenPanel("table")}
+                        title="Open fullscreen"
                         style={{
                           background: "transparent",
                           border: "none",
@@ -1419,32 +1398,16 @@ if (!input.trim())
                           e.currentTarget.style.color = palette.textMuted;
                         }}
                       >
-                        {expandedPanel === "table" ? (
-                          <Minimize2 size={14} strokeWidth={1.8} />
-                        ) : (
-                          <Maximize2 size={14} strokeWidth={1.8} />
-                        )}
+                        <Maximize2 size={14} strokeWidth={1.8} />
                       </button>
                     </div>
 
-                    {/* Card body — table (scrolls) */}
-                    <div
-                      style={{
-                        flex: 1,
-                        overflowX: "auto",
-                        overflowY: "auto",
-                        minHeight: 0,
-                      }}
-                    >
+                    {/* Card body — table scrolls */}
+                    <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
                       {result.length > 0 ? (
                         <table
                           className="min-w-full text-left"
-                          style={{
-                            fontSize: 12,
-                            borderCollapse: "separate",
-                            borderSpacing: 0,
-                            tableLayout: "fixed",
-                          }}
+                          style={{ fontSize: 12, borderCollapse: "separate", borderSpacing: 0, tableLayout: "fixed" }}
                         >
                           <colgroup>
                             <col style={{ width: "160px" }} />
@@ -1483,10 +1446,7 @@ if (!input.trim())
                               <tr
                                 key={i}
                                 style={{
-                                  background:
-                                    i % 2 === 0
-                                      ? palette.bg
-                                      : palette.bgSecondary,
+                                  background: i % 2 === 0 ? palette.bg : palette.bgSecondary,
                                   transition: "background 0.15s ease",
                                 }}
                               >
@@ -1501,10 +1461,7 @@ if (!input.trim())
                                       paddingLeft: j === 0 ? 0 : 24,
                                       paddingRight: j === 0 ? 0 : 20,
                                       color: palette.textSecondary,
-                                      borderBottom:
-                                        i < result.length - 1
-                                          ? `1px solid ${palette.border}`
-                                          : "none",
+                                      borderBottom: i < result.length - 1 ? `1px solid ${palette.border}` : "none",
                                     }}
                                   >
                                     {String(val)}
@@ -1515,19 +1472,13 @@ if (!input.trim())
                           </tbody>
                         </table>
                       ) : (
-                        <p
-                          style={{
-                            padding: "24px",
-                            fontSize: 12.5,
-                            color: palette.textMuted,
-                          }}
-                        >
+                        <p style={{ padding: "24px", fontSize: 12.5, color: palette.textMuted }}>
                           No matching records were found.
                         </p>
                       )}
                     </div>
 
-                    {/* Card footer — export button (always pinned) */}
+                    {/* Card footer — always pinned */}
                     <div
                       style={{
                         borderTop: `1px solid ${palette.border}`,
@@ -1566,10 +1517,6 @@ if (!input.trim())
                       display: "flex",
                       flexDirection: "column",
                       height: "72vh",
-                      opacity: expandedPanel === "table" ? 0 : 1,
-                      transform: expandedPanel === "table" ? "scale(0.98)" : "scale(1)",
-                      transition: "opacity 280ms ease-in-out, transform 280ms ease-in-out",
-                      pointerEvents: expandedPanel === "table" ? "none" : "auto",
                     }}
                   >
                     {/* Card header */}
@@ -1584,35 +1531,16 @@ if (!input.trim())
                       }}
                     >
                       <div>
-                        <p
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: palette.text,
-                            margin: 0,
-                          }}
-                        >
+                        <p style={{ fontSize: 13, fontWeight: 600, color: palette.text, margin: 0 }}>
                           📊 Analytics
                         </p>
-                        <p
-                          style={{
-                            fontSize: 11,
-                            color: palette.textMuted,
-                            marginTop: 3,
-                          }}
-                        >
+                        <p style={{ fontSize: 11, color: palette.textMuted, marginTop: 3 }}>
                           Explore your query visually
                         </p>
                       </div>
-
-                      {/* Expand / collapse button */}
                       <button
-                        onClick={() =>
-                          setExpandedPanel(
-                            expandedPanel === "analytics" ? null : "analytics"
-                          )
-                        }
-                        title={expandedPanel === "analytics" ? "Restore split" : "Expand analytics"}
+                        onClick={() => setFullscreenPanel("analytics")}
+                        title="Open fullscreen"
                         style={{
                           background: "transparent",
                           border: "none",
@@ -1635,15 +1563,11 @@ if (!input.trim())
                           e.currentTarget.style.color = palette.textMuted;
                         }}
                       >
-                        {expandedPanel === "analytics" ? (
-                          <Minimize2 size={14} strokeWidth={1.8} />
-                        ) : (
-                          <Maximize2 size={14} strokeWidth={1.8} />
-                        )}
+                        <Maximize2 size={14} strokeWidth={1.8} />
                       </button>
                     </div>
 
-                    {/* Card body — AnalyticsPanel fills remaining height */}
+                    {/* Card body */}
                     <AnalyticsPanel
                       data={result ?? []}
                       formatColumnName={formatColumnName}
@@ -1651,14 +1575,228 @@ if (!input.trim())
                   </div>
                 </div>
 
-                {/* Responsive: stack on small screens, disable expand */}
+                {/* Responsive */}
                 <style>{`
                   @media (max-width: 1024px) {
-                    .results-grid {
-                      grid-template-columns: 1fr !important;
-                    }
+                    .results-grid { grid-template-columns: 1fr !important; }
                   }
+                  @keyframes fs-in {
+                    from { opacity: 0; transform: scale(0.96); }
+                    to   { opacity: 1; transform: scale(1); }
+                  }
+                  @keyframes fs-out {
+                    from { opacity: 1; transform: scale(1); }
+                    to   { opacity: 0; transform: scale(0.96); }
+                  }
+                  .fs-panel-enter { animation: fs-in 250ms ease forwards; }
+                  .fs-panel-exit  { animation: fs-out 250ms ease forwards; }
                 `}</style>
+
+                {/* ── Fullscreen modal ── */}
+                {fullscreenPanel && (
+                  /* Backdrop — click outside closes */
+                  <div
+                    onClick={() => setFullscreenPanel(null)}
+                    style={{
+                      position: "fixed",
+                      inset: 0,
+                      zIndex: 9999,
+                      background: "rgba(0,0,0,0.82)",
+                      backdropFilter: "blur(8px)",
+                      WebkitBackdropFilter: "blur(8px)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {/* Panel — stop propagation so inside clicks don't close */}
+                    <div
+                      className="fs-panel-enter"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        width: "90vw",
+                        height: "90vh",
+                        maxWidth: 1700,
+                        borderRadius: 16,
+                        background: palette.bg,
+                        border: `1px solid ${palette.border}`,
+                        boxShadow: "0 20px 80px rgba(0,0,0,0.45)",
+                        display: "flex",
+                        flexDirection: "column",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {/* Modal header */}
+                      <div
+                        style={{
+                          padding: "14px 20px",
+                          borderBottom: `1px solid ${palette.border}`,
+                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          background: palette.bg,
+                        }}
+                      >
+                        <div>
+                          <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: palette.text }}>
+                            {fullscreenPanel === "table" ? "📄 Data Table" : "📊 Analytics"}
+                          </p>
+                          <p style={{ margin: 0, fontSize: 11, color: palette.textMuted, marginTop: 3 }}>
+                            {fullscreenPanel === "table"
+                              ? `${result.length} row${result.length !== 1 ? "s" : ""}`
+                              : "Explore your query visually"}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setFullscreenPanel(null)}
+                          title="Close"
+                          style={{
+                            background: "transparent",
+                            border: `1px solid ${palette.border}`,
+                            borderRadius: 8,
+                            padding: "6px 14px",
+                            cursor: "pointer",
+                            color: palette.textMuted,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            fontSize: 12,
+                            fontFamily: "inherit",
+                            transition: "background 150ms, color 150ms",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = palette.hover;
+                            e.currentTarget.style.color = palette.text;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                            e.currentTarget.style.color = palette.textMuted;
+                          }}
+                        >
+                          <X size={13} strokeWidth={1.8} />
+                          Close
+                        </button>
+                      </div>
+
+                      {/* Modal body */}
+                      {fullscreenPanel === "table" ? (
+                        <>
+                          {/* Table fills height */}
+                          <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
+                            {result.length > 0 ? (
+                              <table
+                                className="min-w-full text-left"
+                                style={{ fontSize: 12, borderCollapse: "separate", borderSpacing: 0, tableLayout: "fixed" }}
+                              >
+                                <colgroup>
+                                  <col style={{ width: "160px" }} />
+                                  <col />
+                                </colgroup>
+                                <thead>
+                                  <tr>
+                                    {Object.keys(result[0]).map((col, idx) => (
+                                      <th
+                                        key={formatColumnName(col)}
+                                        className="py-3 whitespace-nowrap"
+                                        style={{
+                                          position: "sticky",
+                                          top: 0,
+                                          background: palette.bg,
+                                          boxShadow: `0 1px 0 ${palette.border}`,
+                                          zIndex: 1,
+                                          width: idx === 0 ? 160 : "auto",
+                                          minWidth: idx === 0 ? 160 : undefined,
+                                          textAlign: idx === 0 ? "center" : "left",
+                                          paddingLeft: idx === 0 ? 0 : 24,
+                                          paddingRight: idx === 0 ? 0 : 20,
+                                          color: palette.textMuted,
+                                          fontSize: 11,
+                                          fontWeight: 600,
+                                          letterSpacing: "0.05em",
+                                        }}
+                                      >
+                                        {formatColumnName(col)}
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {result.map((row, i) => (
+                                    <tr
+                                      key={i}
+                                      style={{
+                                        background: i % 2 === 0 ? palette.bg : palette.bgSecondary,
+                                        transition: "background 0.15s ease",
+                                      }}
+                                    >
+                                      {Object.values(row).map((val, j) => (
+                                        <td
+                                          key={j}
+                                          className="py-4 whitespace-nowrap"
+                                          style={{
+                                            width: j === 0 ? 160 : "auto",
+                                            minWidth: j === 0 ? 160 : undefined,
+                                            textAlign: j === 0 ? "center" : "left",
+                                            paddingLeft: j === 0 ? 0 : 24,
+                                            paddingRight: j === 0 ? 0 : 20,
+                                            color: palette.textSecondary,
+                                            borderBottom: i < result.length - 1 ? `1px solid ${palette.border}` : "none",
+                                          }}
+                                        >
+                                          {String(val)}
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            ) : (
+                              <p style={{ padding: "24px", fontSize: 12.5, color: palette.textMuted }}>
+                                No matching records were found.
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Export footer — pinned */}
+                          <div
+                            style={{
+                              borderTop: `1px solid ${palette.border}`,
+                              padding: "12px 20px",
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              flexShrink: 0,
+                              background: palette.bg,
+                            }}
+                          >
+                            <button
+                              onClick={handleExport}
+                              disabled={!result || exporting}
+                              className="rounded-lg transition-colors disabled:opacity-40"
+                              style={{
+                                background: "transparent",
+                                border: `1px solid ${palette.border}`,
+                                color: palette.text,
+                                fontSize: 12,
+                                padding: "8px 14px",
+                                cursor: exporting ? "not-allowed" : "pointer",
+                                fontFamily: "inherit",
+                              }}
+                            >
+                              {exporting ? "Exporting..." : "Export Excel"}
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        /* Analytics fills the modal body */
+                        <AnalyticsPanel
+                          data={result ?? []}
+                          formatColumnName={formatColumnName}
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
