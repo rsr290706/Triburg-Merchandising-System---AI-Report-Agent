@@ -5,6 +5,7 @@ import {
     clearSemanticCache,
 } from "./services/tmsApi";
 import { useState, useRef, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
 import {
   MessageSquare,
   Star,
@@ -1194,76 +1195,80 @@ if (!input.trim())
 
             {/* Generated SQL — full-width flush section (hidden for file imports) */}
             {generatedSQL && !importedDataset && (
-            <div
-              className="px-6 py-5"
-              style={{
-                borderTop: `1px solid ${palette.border}`,
-                background: palette.bgSecondary,
-              }}
-            >
               <div
-                onClick={() => setShowSQL(!showSQL)}
-                className="flex items-center justify-between cursor-pointer rounded-lg px-4 py-3 transition-colors"
+                className="px-6 py-5"
                 style={{
-                  background: palette.bg,
-                  border: `1px solid ${palette.border}`,
+                  borderTop: `1px solid ${palette.border}`,
+                  background: palette.bgSecondary,
                 }}
               >
-                <div>
-                  <p
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: palette.text,
-                      margin: 0,
-                    }}
-                  >
-                    ✓ SQL Generated Successfully
-                  </p>
-
-                  <p
-                    style={{
-                      fontSize: 12,
-                      color: palette.textMuted,
-                      marginTop: 4,
-                    }}
-                  >
-                    Click to {showSQL ? "hide" : "view"} the generated SQL query
-                  </p>
-                </div>
-
-                <span
-                  style={{
-                    color: palette.textSecondary,
-                    fontSize: 18,
-                  }}
-                >
-                  {showSQL ? "▲" : "▼"}
-                </span>
-              </div>
-
-              {showSQL && (
-                <pre
-                  className="rounded-lg mt-3 px-5 py-5"
+                {/* Clickable Header */}
+                <div
+                  onClick={() => setShowSQL(!showSQL)}
+                  className="flex items-center justify-between cursor-pointer rounded-lg px-4 py-2 transition-colors"
                   style={{
                     background: palette.bg,
                     border: `1px solid ${palette.border}`,
-                    color: "#d1d5db",
-                    fontSize: 13,
-                    lineHeight: 1.8,
-                    fontFamily: "JetBrains Mono, Consolas, monospace",
-                    whiteSpace: "pre",
-                    overflowX: "auto",
-                    overflowY: "auto",
-                    maxHeight: 200,
-                    margin: 0,
                   }}
                 >
-                  {generatedSQL.replace(/\s+/g, " ").trim()}
-                </pre>
-              )}
-            </div>
-          )}
+                  <div>
+                    <p
+                      style={{
+                        fontSize: 12.5,
+                        fontWeight: 500,
+                        color: palette.text,
+                        margin: 0,
+                        letterSpacing: "-0.01em",
+                      }}
+                    >
+                      SQL Generated
+                    </p>
+
+                    <p
+                      style={{
+                        fontSize: 10.5,
+                        color: palette.textMuted,
+                        marginTop: 2,
+                      }}
+                    >
+                      {showSQL ? "Hide generated query" : "View generated query"}
+                    </p>
+                  </div>
+
+                  <ChevronDown
+                    size={14}
+                    strokeWidth={1.8}
+                    style={{
+                      color: palette.textMuted,
+                      transition: "transform 0.2s ease",
+                      transform: showSQL ? "rotate(180deg)" : "rotate(0deg)",
+                    }}
+                  />
+                </div>
+
+                {/* SQL Output */}
+                {showSQL && (
+                  <pre
+                    className="rounded-lg mt-3 px-5 py-5"
+                    style={{
+                      background: palette.bg,
+                      border: `1px solid ${palette.border}`,
+                      color: "#d1d5db",
+                      fontSize: 13,
+                      lineHeight: 1.8,
+                      fontFamily: "JetBrains Mono, Consolas, monospace",
+                      whiteSpace: "pre",
+                      overflowX: "auto",
+                      overflowY: "auto",
+                      maxHeight: 200,
+                      margin: 0,
+                    }}
+                  >
+                    {generatedSQL.replace(/\s+/g, " ").trim()}
+                  </pre>
+                )}
+              </div>
+            )}
 
             <div
               className="px-6 py-3 flex justify-end"
