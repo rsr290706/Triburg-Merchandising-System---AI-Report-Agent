@@ -1410,8 +1410,8 @@ if (!input.trim())
                           style={{ fontSize: 12, borderCollapse: "separate", borderSpacing: 0, tableLayout: "fixed" }}
                         >
                           <colgroup>
-                            <col style={{ width: "160px" }} />
-                            <col />
+                              <col style={{ width: "50%" }} />
+                              <col style={{ width: "50%" }} />
                           </colgroup>
                           <thead>
                             <tr>
@@ -1427,9 +1427,9 @@ if (!input.trim())
                                     zIndex: 1,
                                     width: idx === 0 ? 160 : "auto",
                                     minWidth: idx === 0 ? 160 : undefined,
-                                    textAlign: idx === 0 ? "center" : "left",
-                                    paddingLeft: idx === 0 ? 0 : 24,
-                                    paddingRight: idx === 0 ? 0 : 20,
+                                    textAlign: "center",
+                                    paddingLeft: 0,
+                                    paddingRight: 0,
                                     color: palette.textMuted,
                                     fontSize: 11,
                                     fontWeight: 600,
@@ -1457,9 +1457,9 @@ if (!input.trim())
                                     style={{
                                       width: j === 0 ? 160 : "auto",
                                       minWidth: j === 0 ? 160 : undefined,
-                                      textAlign: j === 0 ? "center" : "left",
-                                      paddingLeft: j === 0 ? 0 : 24,
-                                      paddingRight: j === 0 ? 0 : 20,
+                                      textAlign: "center",
+                                      paddingLeft: 0,
+                                      paddingRight: 0,
                                       color: palette.textSecondary,
                                       borderBottom: i < result.length - 1 ? `1px solid ${palette.border}` : "none",
                                     }}
@@ -1690,8 +1690,8 @@ if (!input.trim())
                                 style={{ fontSize: 12, borderCollapse: "separate", borderSpacing: 0, tableLayout: "fixed" }}
                               >
                                 <colgroup>
-                                  <col style={{ width: "160px" }} />
-                                  <col />
+                                    <col style={{ width: "50%" }} />
+                                    <col style={{ width: "50%" }} />
                                 </colgroup>
                                 <thead>
                                   <tr>
@@ -1707,9 +1707,9 @@ if (!input.trim())
                                           zIndex: 1,
                                           width: idx === 0 ? 160 : "auto",
                                           minWidth: idx === 0 ? 160 : undefined,
-                                          textAlign: idx === 0 ? "center" : "left",
-                                          paddingLeft: idx === 0 ? 0 : 24,
-                                          paddingRight: idx === 0 ? 0 : 20,
+                                          textAlign: "center",
+                                          paddingLeft: 0,
+                                          paddingRight: 0,
                                           color: palette.textMuted,
                                           fontSize: 11,
                                           fontWeight: 600,
@@ -1737,9 +1737,9 @@ if (!input.trim())
                                           style={{
                                             width: j === 0 ? 160 : "auto",
                                             minWidth: j === 0 ? 160 : undefined,
-                                            textAlign: j === 0 ? "center" : "left",
-                                            paddingLeft: j === 0 ? 0 : 24,
-                                            paddingRight: j === 0 ? 0 : 20,
+                                            textAlign: "center",
+                                            paddingLeft: 0,
+                                            paddingRight: 0,
                                             color: palette.textSecondary,
                                             borderBottom: i < result.length - 1 ? `1px solid ${palette.border}` : "none",
                                           }}

@@ -97,23 +97,24 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
 
   if (type === "bar") {
     return (
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={normalized} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke={palette.border} vertical={false} />
+      <ResponsiveContainer width="100%" height="80%">
+        <BarChart data={normalized} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
+          <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
           <XAxis
             dataKey={xField ?? undefined}
             tick={tickStyle}
             tickLine={false}
             axisLine={{ stroke: palette.border }}
-            angle={-35}
-            textAnchor="end"
+            angle={0}
+            textAnchor="middle"
             interval={0}
+            height={50}
           />
           <YAxis
             tick={tickStyle}
             tickLine={false}
             axisLine={false}
-            width={55}
+            width={42}
             tickFormatter={(v: number) =>
               v >= 1_000_000
                 ? `${(v / 1_000_000).toFixed(1)}M`
@@ -123,10 +124,21 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             }
           />
           <Tooltip
-            contentStyle={tooltipStyle}
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
-          />
-          <Bar dataKey={yField} fill={COLORS[0]} radius={[4, 4, 0, 0]} maxBarSize={48} />
+                contentStyle={tooltipStyle}
+                wrapperStyle={{
+                    outline: "none",
+                }}
+                cursor={{
+                    fill: "rgba(255,255,255,.03)",
+                }}
+            />
+          <Bar
+                dataKey={yField}
+                fill={COLORS[0]}
+                radius={[6,6,0,0]}
+                maxBarSize={58}
+                barSize={56}
+            />
         </BarChart>
       </ResponsiveContainer>
     );
@@ -134,23 +146,24 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
 
   if (type === "line") {
     return (
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={normalized} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke={palette.border} vertical={false} />
+      <ResponsiveContainer width="100%" height="80%">
+        <LineChart data={normalized} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
+          <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
           <XAxis
             dataKey={xField ?? undefined}
             tick={tickStyle}
             tickLine={false}
             axisLine={{ stroke: palette.border }}
-            angle={-35}
-            textAnchor="end"
+            angle={0}
+            textAnchor="middle"
             interval={0}
+            height={50}
           />
           <YAxis
             tick={tickStyle}
             tickLine={false}
             axisLine={false}
-            width={55}
+            width={42}
             tickFormatter={(v: number) =>
               v >= 1_000_000
                 ? `${(v / 1_000_000).toFixed(1)}M`
@@ -159,7 +172,15 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
                 : String(v)
             }
           />
-          <Tooltip contentStyle={tooltipStyle} />
+          <Tooltip
+                contentStyle={tooltipStyle}
+                wrapperStyle={{
+                    outline: "none",
+                }}
+                cursor={{
+                    fill: "rgba(255,255,255,.03)",
+                }}
+            />
           <Line
             type="monotone"
             dataKey={yField}
@@ -194,7 +215,15 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
               <Cell key={i} fill={COLORS[i % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip contentStyle={tooltipStyle} />
+          <Tooltip
+                contentStyle={tooltipStyle}
+                wrapperStyle={{
+                    outline: "none",
+                }}
+                cursor={{
+                    fill: "rgba(255,255,255,.03)",
+                }}
+            />
           <Legend
             wrapperStyle={{ fontSize: 11, color: palette.textMuted, fontFamily: "JetBrains Mono, monospace" }}
           />
@@ -205,11 +234,16 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
 
   if (type === "scatter") {
     return (
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="80%">
         <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={palette.border} />
           <XAxis
             dataKey={xField ?? undefined}
+            tickFormatter={(value: string) =>
+                value.length > 14
+                    ? value.slice(0, 14) + "..."
+                    : value
+            }
             type="number"
             name={xField ?? ""}
             tick={tickStyle}
@@ -225,7 +259,15 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             axisLine={false}
             width={55}
           />
-          <Tooltip contentStyle={tooltipStyle} cursor={{ strokeDasharray: "3 3" }} />
+          <Tooltip
+                contentStyle={tooltipStyle}
+                wrapperStyle={{
+                    outline: "none",
+                }}
+                cursor={{
+                    fill: "rgba(255,255,255,.03)",
+                }}
+            />
           <Scatter data={normalized} fill={COLORS[0]} />
         </ScatterChart>
       </ResponsiveContainer>
