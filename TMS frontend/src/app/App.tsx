@@ -623,7 +623,10 @@ if (!input.trim())
   const formatColumnName = (column: string) =>
     column
       .replace(/_/g, " ")
-      .replace(/\b\w/g, c => c.toUpperCase());
+      .replace(/\b\w/g, c => c.toUpperCase())
+      .replace(/\bId\b/g, "ID")
+      .replace(/\bQa\b/g, "QA")
+      .replace(/\bPo\b/g, "PO");
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (uploadingFile)
@@ -1327,8 +1330,17 @@ if (!input.trim())
                   <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: "55vh" }}>
                     <table
                       className="min-w-full text-left"
-                      style={{ fontSize: 12, borderCollapse: "separate", borderSpacing: 0 }}
+                      style={{
+                        fontSize: 12,
+                        borderCollapse: "separate",
+                        borderSpacing: 0,
+                        tableLayout: "fixed",
+                      }}
                     >
+                      <colgroup>
+                        <col style={{ width: "160px" }} />
+                        <col />
+                      </colgroup>
                       <thead>
                         <tr>
                           {Object.keys(result[0]).map((col, idx) => (
@@ -1342,21 +1354,19 @@ if (!input.trim())
                                 boxShadow: `0 1px 0 ${palette.border}`,
                                 zIndex: 1,
 
-                                paddingLeft: idx === 0 ? 24 : 0,
+                                width: idx === 0 ? 160 : "auto",
+                                minWidth: idx === 0 ? 160 : undefined,
+
+                                paddingLeft: 24,
                                 paddingRight: 20,
 
                                 color: palette.textMuted,
-
                                 fontSize: 11,
-
                                 fontWeight: 600,
-
-                                letterSpacing: "0.08em",
-
-                                textTransform: "uppercase",
+                                letterSpacing: "0.05em",
                               }}
                             >
-                              {col}
+                              {formatColumnName(col)}
                             </th>
                           ))}
                         </tr>
@@ -1365,38 +1375,33 @@ if (!input.trim())
                         {result.map((row, i) => (
                           <tr
                             key={i}
-                            className="transition-colors"
                             style={{
-                                background:
-                                    i % 2 === 0
-                                        ? palette.bgSecondary
-                                        : palette.bg,
-
-                                borderBottom:
-                                    i < result.length - 1
-                                        ? `1px solid ${palette.border}`
-                                        : "none",
+                              background: i % 2 === 0 ? palette.bg : palette.bgSecondary,
+                              transition: "background 0.15s ease",
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = palette.hover)}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                           >
                             {Object.values(row).map((val, j) => (
                               <td
                                 key={j}
-                                className="py-3 whitespace-nowrap"
+                                className="py-4 whitespace-nowrap"
                                 style={{
-                                    paddingLeft: j === 0 ? 24 : 0,
-                                    paddingRight: 20,
+                                  width: j === 0 ? 160 : "auto",
+                                  minWidth: j === 0 ? 160 : undefined,
 
-                                    color: palette.textSecondary,
+                                  paddingLeft: 24,
+                                  paddingRight: 20,
 
-                                    textAlign:
-                                        typeof val === "number"
-                                            ? "right"
-                                            : "left",
+                                  textAlign: "left",
+
+                                  color: palette.textSecondary,
+
+                                  borderBottom:
+                                    i < result.length - 1
+                                      ? `1px solid ${palette.border}`
+                                      : "none",
                                 }}
                               >
-                                {String(val ?? "—")}
+                                {String(val)}
                               </td>
                             ))}
                           </tr>
