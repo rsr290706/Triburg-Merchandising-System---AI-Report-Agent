@@ -1247,7 +1247,7 @@ if (!input.trim())
                 <pre
                   className="rounded-lg mt-3 px-5 py-5"
                   style={{
-                    background: "#0d1117",
+                    background: palette.bg,
                     border: `1px solid ${palette.border}`,
                     color: "#d1d5db",
                     fontSize: 13,
@@ -1263,24 +1263,6 @@ if (!input.trim())
                   })}
                 </pre>
               )}
-                <pre
-                  className="rounded-lg mt-3 px-5 py-5"
-                  style={{
-                    background: "#0d1117",
-                    border: `1px solid ${palette.border}`,
-                    color: "#d1d5db",
-                    fontSize: 13,
-                    lineHeight: 1.8,
-                    fontFamily: "JetBrains Mono, Consolas, monospace",
-                    whiteSpace: "pre-wrap",
-                    overflowX: "hidden",
-                    margin: 0,
-                  }}
-                >
-                  {format(generatedSQL, {
-                    language: "mysql",
-                  })}
-                </pre>
             </div>
           )}
 
