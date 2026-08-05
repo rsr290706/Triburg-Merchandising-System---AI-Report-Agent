@@ -4,7 +4,6 @@ import {
     uploadDataFile,
     clearSemanticCache,
 } from "./services/tmsApi";
-import { format } from "sql-formatter";
 import { useState, useRef, useEffect } from "react";
 import {
   MessageSquare,
@@ -1260,9 +1259,7 @@ if (!input.trim())
                     margin: 0,
                   }}
                 >
-                  {format(generatedSQL, {
-                    language: "mysql",
-                  })}
+                  {generatedSQL.replace(/\s+/g, " ").trim()}
                 </pre>
               )}
             </div>
