@@ -18,6 +18,7 @@ import {
   Legend,
 } from "recharts";
 import { ChartType } from "../utils/inferChart";
+import { memo, useMemo, useCallback } from "react";
 
 const COLORS = [
   "#6366f1", "#22c55e", "#f59e0b", "#ec4899",
@@ -89,15 +90,50 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
     );
   }
 
+  const enableAnimation = data.length < 100;
+
+  const truncateTick = useCallback((value: unknown) => {
+    const text = String(value);
+
+    return text.length > 10
+        ? text.slice(0, 10) + "..."
+        : text;
+    }, []);
+
+  
+  
+  const tooltipFormatter = useCallback(
+    (value: unknown) => [
+        Number(value).toLocaleString(),
+        yField ?? "",
+    ],
+    [yField]
+    );
+
   // Normalize data values to numbers for recharts
-  const normalized = data.map((row) => ({
-    ...row,
-    [yField]: Number(row[yField]) || 0,
-  }));
+  const normalized = useMemo(() => {
+    if (!yField) return [];
+
+    return data.map((row) => ({
+        ...row,
+        [yField]: Number(row[yField]) || 0,
+    }));
+    }, [data, yField]);
+
+  const pieCells = useMemo(
+    () =>
+        normalized.map((_, i) => (
+        <Cell
+            key={i}
+            fill={COLORS[i % COLORS.length]}
+        />
+        )),
+    [normalized]
+    );
 
   if (type === "bar") {
     return (
-      <ResponsiveContainer width="100%" height="80%">
+      <ResponsiveContainer width="100%" height="80%" debounce={100}>
         <BarChart data={normalized} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
           <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
           <XAxis
@@ -115,13 +151,10 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             tickLine={false}
             axisLine={false}
             width={42}
-            tickFormatter={(value: string) =>
-                value.length > 10
-                    ? value.slice(0, 10) + "..."
-                    : value
-            }
+            tickFormatter={truncateTick}
           />
           <Tooltip
+                formatter={tooltipFormatter}
                 contentStyle={tooltipStyle}
                 wrapperStyle={{
                     outline: "none",
@@ -132,6 +165,7 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             />
           <Bar
                 dataKey={yField}
+                isAnimationActive={enableAnimation}
                 fill={COLORS[0]}
                 radius={[6,6,0,0]}
                 maxBarSize={58}
@@ -144,7 +178,7 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
 
   if (type === "line") {
     return (
-      <ResponsiveContainer width="100%" height="80%">
+      <ResponsiveContainer width="100%" height="80%" debounce={100}>
         <LineChart data={normalized} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
           <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
           <XAxis
@@ -162,13 +196,10 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             tickLine={false}
             axisLine={false}
             width={42}
-            tickFormatter={(value: string) =>
-                value.length > 10
-                    ? value.slice(0, 10) + "..."
-                    : value
-            }
+            tickFormatter={truncateTick}
           />
           <Tooltip
+                formatter={tooltipFormatter}
                 contentStyle={tooltipStyle}
                 wrapperStyle={{
                     outline: "none",
@@ -184,6 +215,7 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             strokeWidth={2}
             dot={{ fill: COLORS[0], r: 3 }}
             activeDot={{ r: 5 }}
+            isAnimationActive={enableAnimation}
           />
         </LineChart>
       </ResponsiveContainer>
@@ -192,7 +224,7 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
 
   if (type === "pie") {
     return (
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" debounce={100}>
         <PieChart>
           <Pie
             data={normalized}
@@ -207,11 +239,10 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             }
             labelLine={false}
           >
-            {normalized.map((_, i) => (
-              <Cell key={i} fill={COLORS[i % COLORS.length]} />
-            ))}
+            {pieCells}
           </Pie>
           <Tooltip
+                formatter={tooltipFormatter}
                 contentStyle={tooltipStyle}
                 wrapperStyle={{
                     outline: "none",
@@ -230,16 +261,12 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
 
   if (type === "scatter") {
     return (
-      <ResponsiveContainer width="100%" height="80%">
+      <ResponsiveContainer width="100%" height="80%" debounce={100}>
         <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={palette.border} />
           <XAxis
             dataKey={xField ?? undefined}
-            tickFormatter={(value: string) =>
-                value.length > 10
-                    ? value.slice(0, 10) + "..."
-                    : value
-            }
+            tickFormatter={truncateTick}
             type="number"
             name={xField ?? ""}
             tick={tickStyle}
@@ -256,6 +283,7 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             width={55}
           />
           <Tooltip
+                formatter={tooltipFormatter}
                 contentStyle={tooltipStyle}
                 wrapperStyle={{
                     outline: "none",
@@ -264,7 +292,7 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
                     fill: "rgba(255,255,255,.03)",
                 }}
             />
-          <Scatter data={normalized} fill={COLORS[0]} />
+          <Scatter data={normalized} fill={COLORS[0]} isAnimationActive={enableAnimation} />
         </ScatterChart>
       </ResponsiveContainer>
     );
