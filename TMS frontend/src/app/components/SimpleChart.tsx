@@ -115,12 +115,10 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             tickLine={false}
             axisLine={false}
             width={42}
-            tickFormatter={(v: number) =>
-              v >= 1_000_000
-                ? `${(v / 1_000_000).toFixed(1)}M`
-                : v >= 1_000
-                ? `${(v / 1_000).toFixed(1)}K`
-                : String(v)
+            tickFormatter={(value: string) =>
+                value.length > 10
+                    ? value.slice(0, 10) + "..."
+                    : value
             }
           />
           <Tooltip
@@ -164,12 +162,10 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
             tickLine={false}
             axisLine={false}
             width={42}
-            tickFormatter={(v: number) =>
-              v >= 1_000_000
-                ? `${(v / 1_000_000).toFixed(1)}M`
-                : v >= 1_000
-                ? `${(v / 1_000).toFixed(1)}K`
-                : String(v)
+            tickFormatter={(value: string) =>
+                value.length > 10
+                    ? value.slice(0, 10) + "..."
+                    : value
             }
           />
           <Tooltip
@@ -240,8 +236,8 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
           <XAxis
             dataKey={xField ?? undefined}
             tickFormatter={(value: string) =>
-                value.length > 14
-                    ? value.slice(0, 14) + "..."
+                value.length > 10
+                    ? value.slice(0, 10) + "..."
                     : value
             }
             type="number"
