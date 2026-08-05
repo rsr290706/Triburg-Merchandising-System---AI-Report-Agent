@@ -620,6 +620,11 @@ if (!input.trim())
     }
   };
 
+  const formatColumnName = (column: string) =>
+    column
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, c => c.toUpperCase());
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (uploadingFile)
         return;
@@ -1270,42 +1275,53 @@ if (!input.trim())
               </div>
             )}
 
-            <div
-              className="px-6 py-3 flex justify-end"
-              style={{ borderTop: `1px solid ${palette.border}`, background: palette.bgSecondary }}
-            >
-              <button
-                onClick={handleExport}
-                disabled={!result || exporting}
-                className="rounded-lg transition-colors disabled:opacity-40 font-medium"
-                style={{
-                  background: palette.text,
-                  color: palette.bg,
-                  fontSize: 12.5,
-                  padding: "7px 14px",
-                }}
-              >
-                {exporting ? "Exporting..." : "Download Excel"}
-              </button>
-            </div>
+    
 
             {/* Results table — full-width flush at the bottom */}
             {result && (
               <div style={{ borderTop: `1px solid ${palette.border}`, background: palette.bgSecondary }}>
-                <div className="px-6 pt-5 pb-3">
-                  <div className="flex items-center gap-3 flex-wrap" style={{ fontSize: 11.5, color: palette.textMuted }}>
-                    <span>
-                      Results - {result.length} row{result.length !== 1 ? "s" : ""}
-                    </span>
-                    {queryDurationMs !== null && (
-                      <span
-                        className="rounded-full px-2 py-0.5"
-                        style={{ background: palette.card, border: `1px solid ${palette.border}` }}
-                      >
-                        Time taken: {formatDuration(queryDurationMs)}
-                      </span>
-                    )}
+                <div
+                  className="px-6 pt-5 pb-4 flex items-center justify-between"
+                >
+                  <div>
+                    <h3
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: palette.text,
+                        margin: 0,
+                      }}
+                    >
+                      Query Results
+                    </h3>
+
+                    <p
+                      style={{
+                        fontSize: 11,
+                        color: palette.textMuted,
+                        marginTop: 4,
+                      }}
+                    >
+                      {result.length} row{result.length !== 1 ? "s" : ""}
+                      {queryDurationMs !== null &&
+                        ` • ${formatDuration(queryDurationMs)}`}
+                    </p>
                   </div>
+
+                  <button
+                    onClick={handleExport}
+                    disabled={!result || exporting}
+                    className="rounded-lg transition-colors disabled:opacity-40"
+                    style={{
+                      background: "transparent",
+                      border: `1px solid ${palette.border}`,
+                      color: palette.text,
+                      fontSize: 12,
+                      padding: "8px 14px",
+                    }}
+                  >
+                    {exporting ? "Exporting..." : "Export Excel"}
+                  </button>
                 </div>
                 {result.length > 0 ? (
                   <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: "55vh" }}>
@@ -1317,17 +1333,27 @@ if (!input.trim())
                         <tr>
                           {Object.keys(result[0]).map((col, idx) => (
                             <th
-                              key={col}
-                              className="py-2 font-semibold whitespace-nowrap"
+                              key={formatColumnName(col)}
+                              className="py-3 whitespace-nowrap"
                               style={{
                                 position: "sticky",
                                 top: 0,
                                 background: palette.bgSecondary,
                                 boxShadow: `0 1px 0 ${palette.border}`,
                                 zIndex: 1,
+
                                 paddingLeft: idx === 0 ? 24 : 0,
                                 paddingRight: 20,
-                                color: palette.textSecondary,
+
+                                color: palette.textMuted,
+
+                                fontSize: 11,
+
+                                fontWeight: 600,
+
+                                letterSpacing: "0.08em",
+
+                                textTransform: "uppercase",
                               }}
                             >
                               {col}
@@ -1341,7 +1367,15 @@ if (!input.trim())
                             key={i}
                             className="transition-colors"
                             style={{
-                              borderBottom: i < result.length - 1 ? `1px solid ${palette.border}` : "none",
+                                background:
+                                    i % 2 === 0
+                                        ? palette.bgSecondary
+                                        : palette.bg,
+
+                                borderBottom:
+                                    i < result.length - 1
+                                        ? `1px solid ${palette.border}`
+                                        : "none",
                             }}
                             onMouseEnter={(e) => (e.currentTarget.style.background = palette.hover)}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
@@ -1349,11 +1383,17 @@ if (!input.trim())
                             {Object.values(row).map((val, j) => (
                               <td
                                 key={j}
-                                className="py-2 whitespace-nowrap"
+                                className="py-3 whitespace-nowrap"
                                 style={{
-                                  paddingLeft: j === 0 ? 24 : 0,
-                                  paddingRight: 20,
-                                  color: palette.textSecondary,
+                                    paddingLeft: j === 0 ? 24 : 0,
+                                    paddingRight: 20,
+
+                                    color: palette.textSecondary,
+
+                                    textAlign:
+                                        typeof val === "number"
+                                            ? "right"
+                                            : "left",
                                 }}
                               >
                                 {String(val ?? "—")}
@@ -1367,7 +1407,7 @@ if (!input.trim())
                   </div>
                 ) : (
                   <p className="px-6 pb-6" style={{ fontSize: 12.5, color: palette.textMuted }}>
-                    No results found.
+                    No matching records were found.
                   </p>
                 )}
               </div>
