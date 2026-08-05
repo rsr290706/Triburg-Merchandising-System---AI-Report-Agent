@@ -4,6 +4,7 @@ import {
     uploadDataFile,
     clearSemanticCache,
 } from "./services/tmsApi";
+import { AnalyticsPanel } from "./components/AnalyticsPanel";
 import { useState, useRef, useEffect } from "react";
 import {
   MessageSquare,
@@ -1531,17 +1532,12 @@ if (!input.trim())
                           marginTop: 3,
                         }}
                       >
-                        Interactive visualizations
+                        Explore your query visually
                       </p>
                     </div>
 
-                    {/* Card body — Graphic Walker */}
-                    <div style={{ flex: 1, overflow: "hidden" }}>
-                      <GraphicWalker
-                        dataSource={(result ?? []) as any[]}
-                        dark="dark"
-                      />
-                    </div>
+                    {/* Card body — simplified analytics panel */}
+                    <AnalyticsPanel data={result ?? []} />
                   </div>
                 </div>
 
