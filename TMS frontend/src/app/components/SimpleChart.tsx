@@ -139,42 +139,52 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
 
   if (type === "bar") {
     return (
-      <ResponsiveContainer width="100%" height="100%" debounce={100}>
-        <BarChart data={normalized} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
-          <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
-          <XAxis
-            dataKey={xField ?? undefined}
-            tick={tickStyle}
-            tickLine={false}
-            axisLine={{ stroke: palette.border }}
-            angle={0}
-            textAnchor="middle"
-            interval={0}
-            height={50}
-          />
-          <YAxis
-            tick={tickStyle}
-            tickLine={false}
-            axisLine={false}
-            width={42}
-            tickFormatter={truncateTick}
-          />
-          <Tooltip
-            contentStyle={tooltipStyle}
-            wrapperStyle={{ outline: "none" }}
-            cursor={false}
+      <div style={chartStyle}>
+        <ResponsiveContainer width="100%" height="100%" debounce={100}>
+          <BarChart data={normalized} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
+            <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
+            <XAxis
+              dataKey={xField ?? undefined}
+              tick={tickStyle}
+              tickLine={false}
+              axisLine={{ stroke: palette.border }}
+              angle={0}
+              textAnchor="middle"
+              interval={0}
+              height={50}
             />
-          <Bar
-                dataKey={yField}
-                isAnimationActive={enableAnimation}
-                fill={COLORS[0]}
-                activeBar={false}
-                radius={[6,6,0,0]}
-                maxBarSize={58}
-                barSize={56}
+            <YAxis
+              tick={tickStyle}
+              tickLine={false}
+              axisLine={false}
+              width={42}
+              tickFormatter={truncateTick}
             />
-        </BarChart>
-      </ResponsiveContainer>
+            <Tooltip
+              cursor={false}
+              contentStyle={{
+                background: "#1A1A1A",
+                border: `1px solid ${palette.border}`,
+                borderRadius: 10,
+                padding: "12px 14px",
+              }}
+              formatter={(value: number, _name, props) => [
+                Number(value).toLocaleString(),
+                props.payload?.[xField ?? ""],
+              ]}
+            />
+            <Bar
+                  dataKey={yField}
+                  isAnimationActive={enableAnimation}
+                  fill={COLORS[0]}
+                  activeBar={false}
+                  radius={[6,6,0,0]}
+                  maxBarSize={58}
+                  barSize={56}
+              />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     );
   }
 
@@ -201,10 +211,18 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
             tickFormatter={truncateTick}
           />
           <Tooltip
-            contentStyle={tooltipStyle}
-            wrapperStyle={{ outline: "none" }}
             cursor={false}
-            />
+            contentStyle={{
+              background: "#1A1A1A",
+              border: `1px solid ${palette.border}`,
+              borderRadius: 10,
+              padding: "12px 14px",
+            }}
+            formatter={(value: number, _name, props) => [
+              Number(value).toLocaleString(),
+              props.payload?.[xField ?? ""],
+            ]}
+          />
           <Line
             type="monotone"
             dataKey={yField}
@@ -231,18 +249,24 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
             cy="50%"
             outerRadius="70%"
             paddingAngle={2}
-            label={({ name, percent }: { name: string; percent: number }) =>
-              `${name} ${(percent * 100).toFixed(0)}%`
-            }
+            label={false}
             labelLine={false}
           >
             {pieCells}
           </Pie>
           <Tooltip
-            contentStyle={tooltipStyle}
-            wrapperStyle={{ outline: "none" }}
             cursor={false}
-            />
+            contentStyle={{
+              background: "#1A1A1A",
+              border: `1px solid ${palette.border}`,
+              borderRadius: 10,
+              padding: "12px 14px",
+            }}
+            formatter={(value: number, _name, props) => [
+              Number(value).toLocaleString(),
+              props.payload?.[xField ?? ""],
+            ]}
+          />
           <Legend
             wrapperStyle={{ fontSize: 11, color: palette.textMuted, fontFamily: "JetBrains Mono, monospace" }}
           />
@@ -275,10 +299,18 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
             width={55}
           />
           <Tooltip
-            contentStyle={tooltipStyle}
-            wrapperStyle={{ outline: "none" }}
             cursor={false}
-            />
+            contentStyle={{
+              background: "#1A1A1A",
+              border: `1px solid ${palette.border}`,
+              borderRadius: 10,
+              padding: "12px 14px",
+            }}
+            formatter={(value: number, _name, props) => [
+              Number(value).toLocaleString(),
+              props.payload?.[xField ?? ""],
+            ]}
+          />
           <Scatter data={normalized} fill={COLORS[0]} isAnimationActive={enableAnimation} />
         </ScatterChart>
       </ResponsiveContainer>
