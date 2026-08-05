@@ -5,7 +5,6 @@ import {
     clearSemanticCache,
 } from "./services/tmsApi";
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown } from "lucide-react";
 import {
   MessageSquare,
   Star,
@@ -23,7 +22,9 @@ import {
   PanelLeft,
   Trash2,
   Database,
+  ChevronDown,
 } from "lucide-react";
+import { GraphicWalker } from "@kanaries/graphic-walker";
 
 const palette = {
   bg: "#0A0A0A",
@@ -1243,15 +1244,34 @@ if (!input.trim())
                     </p>
                   </div>
 
-                  <ChevronDown
-                    size={14}
-                    strokeWidth={1.8}
-                    style={{
-                      color: palette.textMuted,
-                      transition: "transform 0.2s ease",
-                      transform: showSQL ? "rotate(180deg)" : "rotate(0deg)",
-                    }}
-                  />
+                  <div
+                      style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                      }}
+                  >
+                      {queryDurationMs !== null && (
+                          <span
+                              style={{
+                                  fontSize: 11,
+                                  color: palette.textMuted,
+                              }}
+                          >
+                              {formatDuration(queryDurationMs)}
+                          </span>
+                      )}
+
+                      <ChevronDown
+                        size={14}
+                        strokeWidth={1.8}
+                        style={{
+                          color: palette.textMuted,
+                          transition: "transform 0.2s ease",
+                          transform: showSQL ? "rotate(180deg)" : "rotate(0deg)",
+                        }}
+                      />
+                  </div>
                 </div>
 
                 {/* SQL Output */}
@@ -1277,145 +1297,262 @@ if (!input.trim())
                 )}
               </div>
             )}
-
-    
-
-            {/* Results table — full-width flush at the bottom */}
+            {/* Results — two-panel analytics workspace */}
             {result && (
-              <div style={{ borderTop: `1px solid ${palette.border}`, background: palette.bgSecondary }}>
-                <div
-                  className="px-6 pt-5 pb-4 flex items-center justify-between"
+              <div
+                style={{
+                  borderTop: `1px solid ${palette.border}`,
+                  background: palette.bgSecondary,
+                  padding: "20px",
+                }}
+              >
+                {/* Section title */}
+                <p
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: palette.textMuted,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    marginBottom: 14,
+                  }}
                 >
-                  <div>
-                    <h3
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: palette.text,
-                        margin: 0,
-                      }}
-                    >
-                      Query Results
-                    </h3>
+                  Query Results
+                </p>
 
-                    <p
-                      style={{
-                        fontSize: 11,
-                        color: palette.textMuted,
-                        marginTop: 4,
-                      }}
-                    >
-                      {result.length} row{result.length !== 1 ? "s" : ""}
-                      {queryDurationMs !== null &&
-                        ` • ${formatDuration(queryDurationMs)}`}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={handleExport}
-                    disabled={!result || exporting}
-                    className="rounded-lg transition-colors disabled:opacity-40"
+                {/* Two-panel grid */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "40% 1fr",
+                    gap: 18,
+                    alignItems: "stretch",
+                  }}
+                  className="results-grid"
+                >
+                  {/* ── LEFT: Data Table card ── */}
+                  <div
                     style={{
-                      background: "transparent",
+                      background: palette.bg,
                       border: `1px solid ${palette.border}`,
-                      color: palette.text,
-                      fontSize: 12,
-                      padding: "8px 14px",
+                      borderRadius: 12,
+                      overflow: "hidden",
+                      display: "flex",
+                      flexDirection: "column",
+                      minHeight: 620,
                     }}
                   >
-                    {exporting ? "Exporting..." : "Export Excel"}
-                  </button>
-                </div>
-                {result.length > 0 ? (
-                  <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: "55vh" }}>
-                    <table
-                      className="min-w-full text-left"
+                    {/* Card header */}
+                    <div
                       style={{
-                        fontSize: 12,
-                        borderCollapse: "separate",
-                        borderSpacing: 0,
-                        tableLayout: "fixed",
+                        padding: 16,
+                        borderBottom: `1px solid ${palette.border}`,
+                        flexShrink: 0,
                       }}
                     >
-                      <colgroup>
-                        <col style={{ width: "160px" }} />
-                        <col />
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          {Object.keys(result[0]).map((col, idx) => (
-                            <th
-                              key={formatColumnName(col)}
-                              className="py-3 whitespace-nowrap"
-                              style={{
-                                position: "sticky",
-                                top: 0,
-                                background: palette.bgSecondary,
-                                boxShadow: `0 1px 0 ${palette.border}`,
-                                zIndex: 1,
+                      <p
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: palette.text,
+                          margin: 0,
+                        }}
+                      >
+                        📄 Data Table
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 11,
+                          color: palette.textMuted,
+                          marginTop: 3,
+                        }}
+                      >
+                        {result.length} row{result.length !== 1 ? "s" : ""}
+                      </p>
+                    </div>
 
-                                width: idx === 0 ? 160 : "auto",
-                                minWidth: idx === 0 ? 160 : undefined,
-
-                                textAlign: idx === 0 ? "center" : "left",
-                                paddingLeft: idx === 0 ? 0 : 24,
-                                paddingRight: idx === 0 ? 0 : 20,
-
-                                color: palette.textMuted,
-                                fontSize: 11,
-                                fontWeight: 600,
-                                letterSpacing: "0.05em",
-                              }}
-                            >
-                              {formatColumnName(col)}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {result.map((row, i) => (
-                          <tr
-                            key={i}
-                            style={{
-                              background: i % 2 === 0 ? palette.bg : palette.bgSecondary,
-                              transition: "background 0.15s ease",
-                            }}
-                          >
-                            {Object.values(row).map((val, j) => (
-                              <td
-                                key={j}
-                                className="py-4 whitespace-nowrap"
+                    {/* Card body — table */}
+                    <div
+                      style={{ flex: 1, overflowX: "auto", overflowY: "auto" }}
+                    >
+                      {result.length > 0 ? (
+                        <table
+                          className="min-w-full text-left"
+                          style={{
+                            fontSize: 12,
+                            borderCollapse: "separate",
+                            borderSpacing: 0,
+                            tableLayout: "fixed",
+                          }}
+                        >
+                          <colgroup>
+                            <col style={{ width: "160px" }} />
+                            <col />
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              {Object.keys(result[0]).map((col, idx) => (
+                                <th
+                                  key={formatColumnName(col)}
+                                  className="py-3 whitespace-nowrap"
+                                  style={{
+                                    position: "sticky",
+                                    top: 0,
+                                    background: palette.bg,
+                                    boxShadow: `0 1px 0 ${palette.border}`,
+                                    zIndex: 1,
+                                    width: idx === 0 ? 160 : "auto",
+                                    minWidth: idx === 0 ? 160 : undefined,
+                                    textAlign: idx === 0 ? "center" : "left",
+                                    paddingLeft: idx === 0 ? 0 : 24,
+                                    paddingRight: idx === 0 ? 0 : 20,
+                                    color: palette.textMuted,
+                                    fontSize: 11,
+                                    fontWeight: 600,
+                                    letterSpacing: "0.05em",
+                                  }}
+                                >
+                                  {formatColumnName(col)}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {result.map((row, i) => (
+                              <tr
+                                key={i}
                                 style={{
-                                  width: j === 0 ? 160 : "auto",
-                                  minWidth: j === 0 ? 160 : undefined,
-
-                                  textAlign: j === 0 ? "center" : "left",
-
-                                  paddingLeft: j === 0 ? 0 : 24,
-                                  paddingRight: j === 0 ? 0 : 20,
-
-                                  color: palette.textSecondary,
-
-                                  borderBottom:
-                                    i < result.length - 1
-                                      ? `1px solid ${palette.border}`
-                                      : "none",
+                                  background:
+                                    i % 2 === 0
+                                      ? palette.bg
+                                      : palette.bgSecondary,
+                                  transition: "background 0.15s ease",
                                 }}
                               >
-                                {String(val)}
-                              </td>
+                                {Object.values(row).map((val, j) => (
+                                  <td
+                                    key={j}
+                                    className="py-4 whitespace-nowrap"
+                                    style={{
+                                      width: j === 0 ? 160 : "auto",
+                                      minWidth: j === 0 ? 160 : undefined,
+                                      textAlign: j === 0 ? "center" : "left",
+                                      paddingLeft: j === 0 ? 0 : 24,
+                                      paddingRight: j === 0 ? 0 : 20,
+                                      color: palette.textSecondary,
+                                      borderBottom:
+                                        i < result.length - 1
+                                          ? `1px solid ${palette.border}`
+                                          : "none",
+                                    }}
+                                  >
+                                    {String(val)}
+                                  </td>
+                                ))}
+                              </tr>
                             ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <div className="h-6" />
+                          </tbody>
+                        </table>
+                      ) : (
+                        <p
+                          style={{
+                            padding: "24px",
+                            fontSize: 12.5,
+                            color: palette.textMuted,
+                          }}
+                        >
+                          No matching records were found.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Card footer — export button */}
+                    <div
+                      style={{
+                        borderTop: `1px solid ${palette.border}`,
+                        padding: 16,
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <button
+                        onClick={handleExport}
+                        disabled={!result || exporting}
+                        className="rounded-lg transition-colors disabled:opacity-40"
+                        style={{
+                          background: "transparent",
+                          border: `1px solid ${palette.border}`,
+                          color: palette.text,
+                          fontSize: 12,
+                          padding: "8px 14px",
+                          cursor: exporting ? "not-allowed" : "pointer",
+                        }}
+                      >
+                        {exporting ? "Exporting..." : "Export Excel"}
+                      </button>
+                    </div>
                   </div>
-                ) : (
-                  <p className="px-6 pb-6" style={{ fontSize: 12.5, color: palette.textMuted }}>
-                    No matching records were found.
-                  </p>
-                )}
+
+                  {/* ── RIGHT: Analytics card ── */}
+                  <div
+                    style={{
+                      background: palette.bg,
+                      border: `1px solid ${palette.border}`,
+                      borderRadius: 12,
+                      overflow: "hidden",
+                      display: "flex",
+                      flexDirection: "column",
+                      minHeight: 620,
+                    }}
+                  >
+                    {/* Card header */}
+                    <div
+                      style={{
+                        padding: 16,
+                        borderBottom: `1px solid ${palette.border}`,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: palette.text,
+                          margin: 0,
+                        }}
+                      >
+                        📊 Analytics
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 11,
+                          color: palette.textMuted,
+                          marginTop: 3,
+                        }}
+                      >
+                        Interactive visualizations
+                      </p>
+                    </div>
+
+                    {/* Card body — Graphic Walker */}
+                    <div style={{ flex: 1, overflow: "hidden" }}>
+                      <GraphicWalker
+                        dataSource={(result ?? []) as any[]}
+                        dark="dark"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Responsive: stack on small screens */}
+                <style>{`
+                  @media (max-width: 1024px) {
+                    .results-grid {
+                      grid-template-columns: 1fr !important;
+                    }
+                  }
+                `}</style>
               </div>
             )}
           </div>
