@@ -169,13 +169,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
   }, []);
 
   const CustomXAxisTick = ({ x, y, payload }: any) => {
-    const text = String(payload.value);
-
-    const first =
-      text.length > 14 ? text.slice(0, 14) : text;
-
-    const second =
-      text.length > 14 ? text.slice(14, 28) : "";
+    const words = String(payload.value).split(" ");
 
     return (
       <g transform={`translate(${x},${y})`}>
@@ -186,13 +180,17 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
           textAnchor="middle"
           fill={palette.textMuted}
           fontSize={11}
+          fontFamily="JetBrains Mono, monospace"
         >
-          <tspan x="0">{first}</tspan>
-          {second && (
-            <tspan x="0" dy="12">
-              {second}
+          {words.map((word: string, index: number) => (
+            <tspan
+              key={index}
+              x="0"
+              dy={index === 0 ? 0 : 12}
+            >
+              {word}
             </tspan>
-          )}
+          ))}
         </text>
       </g>
     );
@@ -248,7 +246,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
               angle={0}
               textAnchor="middle"
               interval={0}
-              height={50}
+              height={80}
             />
             <YAxis
               tick={tickStyle}
@@ -294,7 +292,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
             angle={0}
             textAnchor="middle"
             interval={0}
-            height={50}
+            height={80}
           />
           <YAxis
             tick={tickStyle}
