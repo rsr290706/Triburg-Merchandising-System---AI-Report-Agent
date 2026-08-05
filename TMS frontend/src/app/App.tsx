@@ -4,6 +4,7 @@ import {
     uploadDataFile,
     clearSemanticCache,
 } from "./services/tmsApi";
+import { format } from "sql-formatter";
 import { useState, useRef, useEffect } from "react";
 import {
   MessageSquare,
@@ -167,6 +168,7 @@ export default function App() {
   const [lastDatasetId, setLastDatasetId] = useState<string | null>(null);
   const [showSettingsMenu,setShowSettingsMenu]=useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showSQL, setShowSQL] = useState(false);
   const [databaseInfo, setDatabaseInfo] = useState({
   database: "",
   tables: 0,
@@ -1193,18 +1195,94 @@ if (!input.trim())
 
             {/* Generated SQL — full-width flush section (hidden for file imports) */}
             {generatedSQL && !importedDataset && (
-              <div className="px-6 py-5" style={{ borderTop: `1px solid ${palette.border}`, background: palette.bgSecondary }}>
-                <p className="mb-2" style={{ fontSize: 11.5, color: palette.textMuted }}>
-                  Generated SQL
-                </p>
-                <pre
-                  className="rounded-lg px-4 py-3 overflow-x-auto"
-                  style={{ background: palette.bg, border: `1px solid ${palette.border}`, fontSize: 12, color: palette.textSecondary }}
+            <div
+              className="px-6 py-5"
+              style={{
+                borderTop: `1px solid ${palette.border}`,
+                background: palette.bgSecondary,
+              }}
+            >
+              <div
+                onClick={() => setShowSQL(!showSQL)}
+                className="flex items-center justify-between cursor-pointer rounded-lg px-4 py-3 transition-colors"
+                style={{
+                  background: palette.bg,
+                  border: `1px solid ${palette.border}`,
+                }}
+              >
+                <div>
+                  <p
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: palette.text,
+                      margin: 0,
+                    }}
+                  >
+                    ✓ SQL Generated Successfully
+                  </p>
+
+                  <p
+                    style={{
+                      fontSize: 12,
+                      color: palette.textMuted,
+                      marginTop: 4,
+                    }}
+                  >
+                    Click to {showSQL ? "hide" : "view"} the generated SQL query
+                  </p>
+                </div>
+
+                <span
+                  style={{
+                    color: palette.textSecondary,
+                    fontSize: 18,
+                  }}
                 >
-                  {generatedSQL}
-                </pre>
+                  {showSQL ? "▲" : "▼"}
+                </span>
               </div>
-            )}
+
+              {showSQL && (
+                <pre
+                  className="rounded-lg mt-3 px-5 py-5"
+                  style={{
+                    background: "#0d1117",
+                    border: `1px solid ${palette.border}`,
+                    color: "#d1d5db",
+                    fontSize: 13,
+                    lineHeight: 1.8,
+                    fontFamily: "JetBrains Mono, Consolas, monospace",
+                    whiteSpace: "pre-wrap",
+                    overflowX: "hidden",
+                    margin: 0,
+                  }}
+                >
+                  {format(generatedSQL, {
+                    language: "mysql",
+                  })}
+                </pre>
+              )}
+                <pre
+                  className="rounded-lg mt-3 px-5 py-5"
+                  style={{
+                    background: "#0d1117",
+                    border: `1px solid ${palette.border}`,
+                    color: "#d1d5db",
+                    fontSize: 13,
+                    lineHeight: 1.8,
+                    fontFamily: "JetBrains Mono, Consolas, monospace",
+                    whiteSpace: "pre-wrap",
+                    overflowX: "hidden",
+                    margin: 0,
+                  }}
+                >
+                  {format(generatedSQL, {
+                    language: "mysql",
+                  })}
+                </pre>
+            </div>
+          )}
 
             <div
               className="px-6 py-3 flex justify-end"
