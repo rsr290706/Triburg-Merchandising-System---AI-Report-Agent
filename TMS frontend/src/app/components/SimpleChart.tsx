@@ -55,7 +55,7 @@ const tooltipStyle = {
   fontFamily: "JetBrains Mono, monospace",
 };
 
-export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
+export function SimpleChartComponent({ type, data, xField, yField }: SimpleChartProps) {
   if (!yField) return null;
 
   // KPI card
@@ -89,6 +89,7 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
       </div>
     );
   }
+  
 
   const enableAnimation = data.length < 100;
 
@@ -281,3 +282,5 @@ export function SimpleChart({ type, data, xField, yField }: SimpleChartProps) {
 
   return null;
 }
+
+export const SimpleChart = memo(SimpleChartComponent);
