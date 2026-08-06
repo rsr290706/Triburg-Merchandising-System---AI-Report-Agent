@@ -225,6 +225,7 @@ export function AnalyticsPanel({
                 data={data}
                 xField={xField || null}
                 yField={yField || null}
+                compact={true}
             />
         </div>
       </div>
