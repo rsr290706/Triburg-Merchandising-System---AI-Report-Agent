@@ -38,6 +38,7 @@ interface SimpleChartProps {
   data: Record<string, unknown>[];
   xField: string | null;
   yField: string | null;
+  compact?: boolean;
 }
 
 const tickStyle = {
@@ -122,7 +123,7 @@ const CustomTooltip = memo(
   }
 );
 
-export function SimpleChartComponent({ type, data, xField, yField }: SimpleChartProps) {
+export function SimpleChartComponent({ type, data, xField, yField, compact = false }: SimpleChartProps) {
   if (!yField) return null;
 
   // KPI card
@@ -289,13 +290,11 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
             <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
             <XAxis
               dataKey={xField ?? undefined}
-              tick={<CustomXAxisTick />}
+              tick={compact ? false : <CustomXAxisTick />}
               tickLine={false}
               axisLine={{ stroke: palette.border }}
-              angle={0}
-              textAnchor="middle"
               interval={0}
-              height={55}
+              height={compact ? 10 : 55}
             />
             <YAxis
               tick={tickStyle}
@@ -335,13 +334,11 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
           <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
           <XAxis
             dataKey={xField ?? undefined}
-            tick={<CustomXAxisTick />}
+            tick={compact ? false : <CustomXAxisTick />}
             tickLine={false}
             axisLine={{ stroke: palette.border }}
-            angle={0}
-            textAnchor="middle"
             interval={0}
-            height={55}
+            height={compact ? 10 : 55}
           />
           <YAxis
             tick={tickStyle}
