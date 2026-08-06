@@ -5,6 +5,7 @@ import {
     clearSemanticCache,
 } from "./services/tmsApi";
 import { AnalyticsPanel } from "./components/AnalyticsPanel";
+import { memo, useMemo, useCallback } from "react";
 import { useState, useRef, useEffect } from "react";
 import {
   MessageSquare,
@@ -514,12 +515,12 @@ export default function App() {
     if (uploadingFile)
     return;
 
-if (!input.trim())
-    if (uploadingFile)
-        return;
-
     if (!input.trim())
-        return;
+        if (uploadingFile)
+            return;
+
+        if (!input.trim())
+            return;
     const question = input.trim();
     setInput(question);
     if (textareaRef.current) textareaRef.current.style.height = "auto";
@@ -641,6 +642,9 @@ if (!input.trim())
       .replace(/\bQa\b/g, "QA")
       .replace(/\bPo\b/g, "PO");
 
+
+  
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (uploadingFile)
         return;
@@ -674,6 +678,18 @@ if (!input.trim())
       activeTab === 1
           ? starredChats
           : historyChats;
+  
+  const numericColumns = useMemo(() => {
+    if (!result || result.length === 0) {
+      return new Set<string>();
+    }
+
+    return new Set(
+      Object.entries(result[0])
+        .filter(([, value]) => typeof value === "number")
+        .map(([key]) => key)
+    );
+  }, [result]);
 
   return (
     <div
@@ -1404,16 +1420,27 @@ if (!input.trim())
                     </div>
 
                     {/* Card body — table scrolls */}
-                    <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
+                    <div
+                        style={{
+                            flex: 1,
+
+                            overflow: "auto",
+
+                            padding: "0 28px",
+
+                            width: "100%",
+                        }}
+                    >
                       {result.length > 0 ? (
                         <table
                           className="min-w-full text-left"
-                          style={{ fontSize: 12, borderCollapse: "separate", borderSpacing: 0, tableLayout: "fixed" }}
+                          style={{
+                              width: "100%",
+                              borderCollapse: "collapse",
+                              tableLayout: "auto",
+                              fontSize: 13,
+                          }}
                         >
-                          <colgroup>
-                              <col style={{ width: "50%" }} />
-                              <col style={{ width: "50%" }} />
-                          </colgroup>
                           <thead>
                             <tr>
                               {Object.keys(result[0]).map((col, idx) => (
@@ -1421,20 +1448,23 @@ if (!input.trim())
                                   key={formatColumnName(col)}
                                   className="py-3 whitespace-nowrap"
                                   style={{
-                                    position: "sticky",
-                                    top: 0,
-                                    background: palette.bg,
-                                    boxShadow: `0 1px 0 ${palette.border}`,
-                                    zIndex: 1,
-                                    width: idx === 0 ? 160 : "auto",
-                                    minWidth: idx === 0 ? 160 : undefined,
-                                    textAlign: "center",
-                                    paddingLeft: 0,
-                                    paddingRight: 0,
-                                    color: palette.textMuted,
-                                    fontSize: 11,
-                                    fontWeight: 600,
-                                    letterSpacing: "0.05em",
+                                      position: "sticky",
+                                      top: 0,
+                                      background: palette.bg,
+                                      borderBottom: `1px solid ${palette.border}`,
+                                      zIndex: 2,
+
+                                      padding: "14px 18px",
+
+                                      textAlign: idx === 0 ? "left" : "right",
+
+                                      whiteSpace: "nowrap",
+
+                                      color: palette.textMuted,
+                                      fontSize: 12,
+                                      fontWeight: 600,
+
+                                      minWidth: idx === 0 ? 420 : 180
                                   }}
                                 >
                                   {formatColumnName(col)}
@@ -1451,21 +1481,32 @@ if (!input.trim())
                                   transition: "background 0.15s ease",
                                 }}
                               >
-                                {Object.values(row).map((val, j) => (
+                                {Object.entries(row).map(([column, val], j) => (
                                   <td
-                                    key={j}
+                                    key={column}
                                     className="py-4 whitespace-nowrap"
                                     style={{
-                                      width: j === 0 ? 160 : "auto",
-                                      minWidth: j === 0 ? 160 : undefined,
-                                      textAlign: "center",
-                                      paddingLeft: 0,
-                                      paddingRight: 0,
-                                      color: palette.textSecondary,
-                                      borderBottom: i < result.length - 1 ? `1px solid ${palette.border}` : "none",
+                                      padding: "13px 18px",
+
+                                      textAlign: numericColumns.has(column)
+                                        ? "right"
+                                        : "left",
+
+                                      color: palette.text,
+
+                                      borderBottom:
+                                        i < result.length - 1
+                                          ? `1px solid ${palette.border}`
+                                          : "none",
+
+                                      whiteSpace: "nowrap",
+
+                                      minWidth: j === 0 ? 340 : 160,
                                     }}
                                   >
-                                    {String(val)}
+                                    {typeof val === "number"
+                                      ? val.toLocaleString()
+                                      : String(val)}
                                   </td>
                                 ))}
                               </tr>
@@ -1701,16 +1742,27 @@ if (!input.trim())
                       {fullscreenPanel === "table" ? (
                         <>
                           {/* Table fills height */}
-                          <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
+                          <div
+                              style={{
+                                  flex: 1,
+
+                                  overflow: "auto",
+
+                                  padding: "0 28px",
+
+                                  width: "100%",
+                              }}
+                          >
                             {result.length > 0 ? (
                               <table
                                 className="min-w-full text-left"
-                                style={{ fontSize: 12, borderCollapse: "separate", borderSpacing: 0, tableLayout: "fixed" }}
+                                style={{
+                                    width: "100%",
+                                    borderCollapse: "collapse",
+                                    tableLayout: "auto",
+                                    fontSize: 13,
+                                }}
                               >
-                                <colgroup>
-                                    <col style={{ width: "50%" }} />
-                                    <col style={{ width: "50%" }} />
-                                </colgroup>
                                 <thead>
                                   <tr>
                                     {Object.keys(result[0]).map((col, idx) => (
@@ -1718,20 +1770,23 @@ if (!input.trim())
                                         key={formatColumnName(col)}
                                         className="py-3 whitespace-nowrap"
                                         style={{
-                                          position: "sticky",
-                                          top: 0,
-                                          background: palette.bg,
-                                          boxShadow: `0 1px 0 ${palette.border}`,
-                                          zIndex: 1,
-                                          width: idx === 0 ? 160 : "auto",
-                                          minWidth: idx === 0 ? 160 : undefined,
-                                          textAlign: "center",
-                                          paddingLeft: 0,
-                                          paddingRight: 0,
-                                          color: palette.textMuted,
-                                          fontSize: 11,
-                                          fontWeight: 600,
-                                          letterSpacing: "0.05em",
+                                            position: "sticky",
+                                            top: 0,
+                                            background: palette.bg,
+                                            borderBottom: `1px solid ${palette.border}`,
+                                            zIndex: 2,
+
+                                            padding: "14px 18px",
+
+                                            textAlign: idx === 0 ? "left" : "right",
+
+                                            whiteSpace: "nowrap",
+
+                                            color: palette.textMuted,
+                                            fontSize: 12,
+                                            fontWeight: 600,
+
+                                            minWidth: idx === 0 ? 420 : 180
                                         }}
                                       >
                                         {formatColumnName(col)}
@@ -1748,21 +1803,32 @@ if (!input.trim())
                                         transition: "background 0.15s ease",
                                       }}
                                     >
-                                      {Object.values(row).map((val, j) => (
+                                      {Object.entries(row).map(([column, val], j) => (
                                         <td
-                                          key={j}
+                                          key={column}
                                           className="py-4 whitespace-nowrap"
                                           style={{
-                                            width: j === 0 ? 160 : "auto",
-                                            minWidth: j === 0 ? 160 : undefined,
-                                            textAlign: "center",
-                                            paddingLeft: 0,
-                                            paddingRight: 0,
-                                            color: palette.textSecondary,
-                                            borderBottom: i < result.length - 1 ? `1px solid ${palette.border}` : "none",
+                                            padding: "10px 18px",
+
+                                            textAlign: numericColumns.has(column)
+                                              ? "right"
+                                              : "left",
+
+                                            color: palette.text,
+
+                                            borderBottom:
+                                              i < result.length - 1
+                                                ? `1px solid ${palette.border}`
+                                                : "none",
+
+                                            whiteSpace: "nowrap",
+
+                                            minWidth: j === 0 ? 340 : 160,
                                           }}
                                         >
-                                          {String(val)}
+                                          {typeof val === "number"
+                                            ? val.toLocaleString()
+                                            : String(val)}
                                         </td>
                                       ))}
                                     </tr>
