@@ -1645,6 +1645,7 @@ export default function App() {
                       <AnalyticsPanel
                         data={result ?? []}
                         formatColumnName={formatColumnName}
+                        compact={true}
                       />
                     </div>
                   )}

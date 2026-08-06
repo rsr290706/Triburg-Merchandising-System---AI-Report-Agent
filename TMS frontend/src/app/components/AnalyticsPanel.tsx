@@ -85,12 +85,14 @@ function Select({ value, options, onChange, placeholder }: SelectProps) {
 interface AnalyticsPanelProps {
   data: Record<string, unknown>[];
   formatColumnName: (column: string) => string;
+  compact?: boolean;
 }
 
 export function AnalyticsPanel({
-    data,
-    formatColumnName,
-    }: AnalyticsPanelProps) {
+      data,
+      formatColumnName,
+      compact = false,
+  }: AnalyticsPanelProps) {
   const suggestions = useMemo(() => inferChartSuggestions(data), [data]);
   const columns = useMemo(() => analyzeColumns(data), [data]);
   const visualizable = useMemo(() => canVisualize(data), [data]);
@@ -225,7 +227,7 @@ export function AnalyticsPanel({
                 data={data}
                 xField={xField || null}
                 yField={yField || null}
-                compact={true}
+                compact={compact}
             />
         </div>
       </div>
