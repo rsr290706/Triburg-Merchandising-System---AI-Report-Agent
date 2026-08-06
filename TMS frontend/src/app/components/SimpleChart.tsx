@@ -241,24 +241,40 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
 
   // Normalize data values to numbers for recharts
   const normalized = useMemo(() => {
-    if (!yField) return [];
+      if (!yField) return [];
 
-    return data.map((row) => ({
-        ...row,
-        [yField]: Number(row[yField]) || 0,
-    }));
-    }, [data, yField]);
+      return data.map((row) => ({
+          ...row,
+          [yField]: Number(row[yField]) || 0,
+      }));
+  }, [data, yField]);
+
+  const chartData = useMemo(() => {
+      if (!yField) return normalized;
+
+      if (normalized.length <= 10) {
+          return normalized;
+      }
+
+      return [...normalized]
+          .sort(
+              (a, b) =>
+                  Number(b[yField] ?? 0) -
+                  Number(a[yField] ?? 0)
+          )
+          .slice(0, 10);
+  }, [normalized, yField]);
 
   const pieCells = useMemo(
-    () =>
-        normalized.map((_, i) => (
-        <Cell
-            key={i}
-            fill={COLORS[i % COLORS.length]}
-        />
-        )),
-    [normalized]
-    );
+      () =>
+          chartData.map((_, i) => (
+              <Cell
+                  key={i}
+                  fill={COLORS[i % COLORS.length]}
+              />
+          )),
+      [chartData]
+  );
 
   const chartStyle = {
     width: "100%",
@@ -269,7 +285,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
     return (
       <div style={chartStyle}>
         <ResponsiveContainer width="100%" height="100%" debounce={100}>
-          <BarChart data={normalized} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
+          <BarChart data={chartData} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
             <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
             <XAxis
               dataKey={xField ?? undefined}
@@ -315,7 +331,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
   if (type === "line") {
     return (
       <ResponsiveContainer width="100%" height="100%" debounce={100}>
-        <LineChart data={normalized} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
+        <LineChart data={chartData} margin={{ top: 6, right: 10, left: 4, bottom: 12 }}>
           <CartesianGrid strokeDasharray="2 4" stroke={palette.border} vertical={false} />
           <XAxis
             dataKey={xField ?? undefined}
@@ -362,7 +378,7 @@ export function SimpleChartComponent({ type, data, xField, yField }: SimpleChart
       <ResponsiveContainer width="100%" height="100%" debounce={100}>
         <PieChart>
           <Pie
-            data={normalized}
+            data={chartData}
             dataKey={yField}
             nameKey={xField ?? undefined}
             cx="50%"
