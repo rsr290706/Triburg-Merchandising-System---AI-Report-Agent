@@ -678,6 +678,8 @@ export default function App() {
       activeTab === 1
           ? starredChats
           : historyChats;
+
+  const isCompact = fullscreenPanel !== "table";
   
   const numericColumns = useMemo(() => {
     if (!result || result.length === 0) {
@@ -1435,10 +1437,10 @@ export default function App() {
                         <table
                           className="min-w-full text-left"
                           style={{
-                              width: "100%",
-                              borderCollapse: "collapse",
-                              tableLayout: "auto",
-                              fontSize: 13,
+                            width: "100%",
+                            borderCollapse: "collapse",
+                            tableLayout: isCompact ? "fixed" : "auto",
+                            fontSize: isCompact ? 11 : 13,
                           }}
                         >
                           <thead>
@@ -1454,17 +1456,21 @@ export default function App() {
                                       borderBottom: `1px solid ${palette.border}`,
                                       zIndex: 2,
 
-                                      padding: "14px 18px",
+                                      padding: isCompact ? "8px 10px" : "14px 18px",
 
                                       textAlign: idx === 0 ? "left" : "right",
 
-                                      whiteSpace: "nowrap",
-
                                       color: palette.textMuted,
-                                      fontSize: 12,
+                                      fontSize: isCompact ? 10 : 12,
                                       fontWeight: 600,
 
-                                      minWidth: idx === 0 ? 420 : 180
+                                      whiteSpace: "nowrap",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+
+                                      minWidth: isCompact
+                                          ? (idx === 0 ? 160 : 90)
+                                          : (idx === 0 ? 340 : 160),
                                   }}
                                 >
                                   {formatColumnName(col)}
@@ -1486,27 +1492,37 @@ export default function App() {
                                     key={column}
                                     className="py-4 whitespace-nowrap"
                                     style={{
-                                      padding: "13px 18px",
+                                        padding: isCompact ? "6px 10px" : "10px 18px",
 
-                                      textAlign: numericColumns.has(column)
-                                        ? "right"
-                                        : "left",
+                                        textAlign: numericColumns.has(column)
+                                            ? "right"
+                                            : "left",
 
-                                      color: palette.text,
+                                        color: palette.text,
 
-                                      borderBottom:
-                                        i < result.length - 1
-                                          ? `1px solid ${palette.border}`
-                                          : "none",
+                                        fontSize: isCompact ? 11 : 13,
 
-                                      whiteSpace: "nowrap",
+                                        borderBottom:
+                                            i < result.length - 1
+                                                ? `1px solid ${palette.border}`
+                                                : "none",
 
-                                      minWidth: j === 0 ? 340 : 160,
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+
+                                        minWidth: isCompact
+                                            ? (j === 0 ? 160 : 90)
+                                            : (j === 0 ? 340 : 160),
                                     }}
                                   >
                                     {typeof val === "number"
-                                      ? val.toLocaleString()
-                                      : String(val)}
+                                    ? val.toLocaleString()
+                                    : (
+                                        isCompact && String(val).length > 18
+                                            ? `${String(val).slice(0, 18)}...`
+                                            : String(val)
+                                    )}
                                   </td>
                                 ))}
                               </tr>
