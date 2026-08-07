@@ -27,8 +27,6 @@ const CHART_ICONS: Record<ChartType, React.ReactNode> = {
   bar: <BarChart2 size={13} />,
   line: <TrendingUp size={13} />,
   pie: <PieChart size={13} />,
-  scatter: <BarChart2 size={13} />,
-  kpi: <BarChart2 size={13} />,
 };
 
 interface SelectProps {
@@ -125,8 +123,6 @@ export function AnalyticsPanel({
     { type: "bar", label: "Bar" },
     { type: "line", label: "Line" },
     { type: "pie", label: "Pie" },
-    { type: "scatter", label: "Scatter" },
-    { type: "kpi", label: "KPI" },
   ];
 
   if (!visualizable) {
@@ -184,8 +180,7 @@ export function AnalyticsPanel({
           />
         </div>
 
-        {/* X Axis — hidden for KPI */}
-        {chartType !== "kpi" && (
+        {/* X Axis */}
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             <label style={{ fontSize: 10.5, color: palette.textMuted, letterSpacing: "0.05em", textTransform: "uppercase" }}>
               X Axis
@@ -198,7 +193,7 @@ export function AnalyticsPanel({
               formatColumnName={formatColumnName}
             />
           </div>
-        )}
+        
 
         {/* Y Axis */}
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
@@ -232,11 +227,12 @@ export function AnalyticsPanel({
             }}
         >
             <SimpleChart
-                type={chartType}
-                data={data}
-                xField={xField || null}
-                yField={yField || null}
-                compact={compact}
+              type={chartType}
+              data={data}
+              xField={xField || null}
+              yField={yField || null}
+              compact={compact}
+              formatColumnName={formatColumnName}
             />
         </div>
       </div>

@@ -1,6 +1,6 @@
 // src/utils/inferChart.ts
 
-export type ChartType = "bar" | "line" | "pie" | "scatter" | "kpi";
+export type ChartType = "bar" | "line" | "pie";
 
 export interface ColumnMeta {
   name: string;
@@ -84,26 +84,6 @@ export function inferChartSuggestions(
       xField: categories[0].name,
       yField: numbers[0].name,
       label: "Pie",
-    });
-  }
-
-  // Two numbers → Scatter
-  if (numbers.length >= 2) {
-    suggestions.push({
-      type: "scatter",
-      xField: numbers[0].name,
-      yField: numbers[1].name,
-      label: "Scatter",
-    });
-  }
-
-  // Single number only → KPI
-  if (numbers.length === 1 && categories.length === 0 && dates.length === 0) {
-    suggestions.push({
-      type: "kpi",
-      xField: null,
-      yField: numbers[0].name,
-      label: "KPI",
     });
   }
 
