@@ -1772,9 +1772,10 @@ export default function App() {
                           >
                             {result.length > 0 ? (
                               <table
-                                className="min-w-full text-left"
+                                className="text-left"
                                 style={{
-                                    width: "100%",
+                                    width: "max-content",
+                                    minWidth: "0",
                                     borderCollapse: "collapse",
                                     tableLayout: "auto",
                                     fontSize: 13,
@@ -1798,12 +1799,11 @@ export default function App() {
                                             textAlign: idx === 0 ? "left" : "right",
 
                                             whiteSpace: "nowrap",
-
                                             color: palette.textMuted,
                                             fontSize: 12,
                                             fontWeight: 600,
 
-                                            minWidth: idx === 0 ? 420 : 180
+                                            minWidth: idx === 0 ? 180 : 140
                                         }}
                                       >
                                         {formatColumnName(col)}
@@ -1840,7 +1840,7 @@ export default function App() {
 
                                             whiteSpace: "nowrap",
 
-                                            minWidth: j === 0 ? 340 : 160,
+                                            minWidth: j === 0 ? 180 : 140,
                                           }}
                                         >
                                           {typeof val === "number"
