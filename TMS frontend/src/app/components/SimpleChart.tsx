@@ -141,39 +141,6 @@ export function SimpleChartComponent({
   }: SimpleChartProps) {
   if (!yField) return null;
 
-  // KPI card
-  if (type === "kpi") {
-    const val = data[0]?.[yField];
-    return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100%",
-          gap: 8,
-        }}
-      >
-        <p style={{ fontSize: 11, color: palette.textMuted, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-          {yField ? formatColumnName?.(yField) ?? yField : ""}
-        </p>
-        <p
-          style={{
-            fontSize: 56,
-            fontWeight: 700,
-            color: palette.text,
-            fontFamily: "JetBrains Mono, monospace",
-            lineHeight: 1,
-          }}
-        >
-          {typeof val === "number" ? val.toLocaleString() : String(val ?? "—")}
-        </p>
-      </div>
-    );
-  }
-  
-
   const enableAnimation = data.length < 100;
 
   const truncateTick = useCallback((value: unknown) => {
