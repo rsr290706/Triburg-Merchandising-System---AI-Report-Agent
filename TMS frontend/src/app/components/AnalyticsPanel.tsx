@@ -36,9 +36,16 @@ interface SelectProps {
   options: string[];
   onChange: (v: string) => void;
   placeholder?: string;
+  formatColumnName?: (column: string) => string;
 }
 
-function Select({ value, options, onChange, placeholder }: SelectProps) {
+function Select({
+    value,
+    options,
+    onChange,
+    placeholder,
+    formatColumnName,
+  }: SelectProps) {
   return (
     <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
       <select
@@ -65,7 +72,7 @@ function Select({ value, options, onChange, placeholder }: SelectProps) {
         )}
         {options.map((o) => (
           <option key={o} value={o} style={{ background: palette.card }}>
-            {o}
+            {formatColumnName ? formatColumnName(o) : o}
           </option>
         ))}
       </select>
@@ -188,6 +195,7 @@ export function AnalyticsPanel({
               options={allColumnNames}
               onChange={setXField}
               placeholder="Select column"
+              formatColumnName={formatColumnName}
             />
           </div>
         )}
@@ -202,6 +210,7 @@ export function AnalyticsPanel({
             options={numberColumns.length ? numberColumns : allColumnNames}
             onChange={setYField}
             placeholder="Select column"
+            formatColumnName={formatColumnName}
           />
         </div>
       </div>

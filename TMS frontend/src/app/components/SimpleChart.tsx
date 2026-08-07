@@ -39,6 +39,7 @@ interface SimpleChartProps {
   xField: string | null;
   yField: string | null;
   compact?: boolean;
+  formatColumnName?: (column: string) => string;
 }
 
 const tickStyle = {
@@ -63,10 +64,17 @@ interface CustomTooltipProps {
   label?: string;
   xField: string | null;
   yField: string | null;
+  formatColumnName?: (column: string) => string;
 }
 
 const CustomTooltip = memo(
-  ({ active, payload, xField, yField }: CustomTooltipProps) => {
+  ({
+    active,
+    payload,
+    xField,
+    yField,
+    formatColumnName,
+  }: CustomTooltipProps) => {
     if (!active || !payload?.length) return null;
 
     const row = payload[0].payload;
@@ -105,7 +113,7 @@ const CustomTooltip = memo(
             letterSpacing: ".05em",
           }}
         >
-          {yField}
+          {yField ? formatColumnName?.(yField) ?? yField : ""}
         </div>
 
         <div
@@ -123,7 +131,14 @@ const CustomTooltip = memo(
   }
 );
 
-export function SimpleChartComponent({ type, data, xField, yField, compact = false }: SimpleChartProps) {
+export function SimpleChartComponent({
+    type,
+    data,
+    xField,
+    yField,
+    compact,
+    formatColumnName,
+  }: SimpleChartProps) {
   if (!yField) return null;
 
   // KPI card
@@ -141,7 +156,7 @@ export function SimpleChartComponent({ type, data, xField, yField, compact = fal
         }}
       >
         <p style={{ fontSize: 11, color: palette.textMuted, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-          {yField}
+          {yField ? formatColumnName?.(yField) ?? yField : ""}
         </p>
         <p
           style={{
@@ -309,6 +324,7 @@ export function SimpleChartComponent({ type, data, xField, yField, compact = fal
                 <CustomTooltip
                   xField={xField}
                   yField={yField}
+                  formatColumnName={formatColumnName}
                 />
               }
             />
@@ -353,6 +369,7 @@ export function SimpleChartComponent({ type, data, xField, yField, compact = fal
               <CustomTooltip
                 xField={xField}
                 yField={yField}
+                formatColumnName={formatColumnName}
               />
             }
           />
@@ -393,6 +410,7 @@ export function SimpleChartComponent({ type, data, xField, yField, compact = fal
               <CustomTooltip
                 xField={xField}
                 yField={yField}
+                formatColumnName={formatColumnName}
               />
             }
           />
@@ -413,7 +431,7 @@ export function SimpleChartComponent({ type, data, xField, yField, compact = fal
             dataKey={xField ?? undefined}
             tickFormatter={truncateTick}
             type="number"
-            name={xField ?? ""}
+            name={xField ? formatColumnName?.(xField) ?? xField : ""}
             tick={<CustomXAxisTick />}
             tickLine={false}
             axisLine={{ stroke: palette.border }}
@@ -421,7 +439,7 @@ export function SimpleChartComponent({ type, data, xField, yField, compact = fal
           <YAxis
             dataKey={yField}
             type="number"
-            name={yField}
+            name={yField ? formatColumnName?.(yField) ?? yField : ""}
             tick={tickStyle}
             tickLine={false}
             axisLine={false}
@@ -433,6 +451,7 @@ export function SimpleChartComponent({ type, data, xField, yField, compact = fal
               <CustomTooltip
                 xField={xField}
                 yField={yField}
+                formatColumnName={formatColumnName}
               />
             }
           />
