@@ -1517,12 +1517,12 @@ export default function App() {
                                     }}
                                   >
                                     {typeof val === "number"
-                                    ? val.toLocaleString()
-                                    : (
-                                        isCompact && String(val).length > 18
-                                            ? `${String(val).slice(0, 18)}...`
-                                            : String(val)
-                                    )}
+                                      ? val.toLocaleString()
+                                      : typeof val === "string" &&
+                                        val.trim() !== "" &&
+                                        !isNaN(Number(val))
+                                        ? Number(val).toLocaleString()
+                                        : String(val ?? "—")}
                                   </td>
                                 ))}
                               </tr>
@@ -1845,7 +1845,11 @@ export default function App() {
                                         >
                                           {typeof val === "number"
                                             ? val.toLocaleString()
-                                            : String(val)}
+                                            : typeof val === "string" &&
+                                              val.trim() !== "" &&
+                                              !isNaN(Number(val))
+                                              ? Number(val).toLocaleString()
+                                              : String(val ?? "—")}
                                         </td>
                                       ))}
                                     </tr>
